@@ -5,7 +5,7 @@ require_once(BLOGROOT."lib/simple_html_dom.inc");
 class Post {
   private $data;
 
-	public function __construct($location) {
+	public function __construct($location, $use_db=true) {
 		global $db;
 		$this->data = array();
 		
@@ -26,7 +26,7 @@ class Post {
     /* if we have a db handle, it's faster to get data (if any exists) from
      * there than from the fs. prefetch it.
      */
-    if($db && !array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data)) {
+    if($use_db && $db && !array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data)) {
 
       /* if any of our datas have been set already, this means we already
        * wasted time on an imcomplete array argument. let the runner know and
@@ -45,7 +45,9 @@ class Post {
 	    $res->closeCursor();
 	    unset($res);
 
-      if($arr === false) $arr = array();
+      if($arr === false) {
+				return;
+			}
       
       Post::checkArgs($arr);
       
@@ -210,6 +212,9 @@ class Post {
   /***************************************************************************/
 
 	public function postid() {
+		if(!array_key_exists("postid", $this->data)) {
+			return false;
+		}
     assert(is_numeric($this->data["postid"]));
 		return $this->data["postid"];
 	}
