@@ -1,0 +1,310 @@
+body {
+	font-family: Helvetica, Arial, Verdana;
+	font-size: 13px;
+	line-height: 17px;
+	color: #454545;
+	overflow-y: scroll;
+}
+
+object {
+  margin-left: 1em;
+}
+
+span.list {
+	color: #454545;
+}
+
+div.entrybody img {
+	margin-left: 1em;
+}
+
+img {
+	border: 0px;
+}
+
+a, a:active, a:visited {
+  color : #0033cc;
+  text-decoration : none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	color: black;
+	display: block;
+	font-weight: normal;
+	font-family: 'Myriad Pro', HelveticaNeue-Light, 'Helvetica Neue Light', 'Lucida Grande', 'Helvetica Neue', Arial, 'Lucida Sans Unicode', sans-serif;
+}
+
+h1 {
+	font-size: 30px;
+	line-height: 1.2;
+	margin: 0.3em 0px 10px;
+}
+
+h2 {
+	font-size: 25px;
+}
+
+h3 {
+	font-size: 20px;
+}
+
+h4 {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	font-weight: bold;
+}
+
+#container {
+	margin: 40px auto;
+	width: 623px;
+	text-align: left;
+}
+
+.entry {
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 0em;
+	padding-top: 1em;
+	padding-bottom: 0.5em;
+}
+
+.entrycategory {
+	margin:0em;
+	padding:0em;
+	width: 20px;
+	float: left;
+}
+
+.entrybody {
+	width: 593px;
+	margin-left: 10px;
+	float: left;
+}
+
+p {
+	margin-bottom: 0em;
+	margin-top: 1em;
+}
+
+div.entrydate {
+	float: right;
+	margin-top: 0.4em;
+	margin-bottom: 1em;
+	margin-right: 0.5em;
+}
+
+p.entrydate {
+	font-family: Georgia, 'Times New Roman', Times, Helvetica, Arial;
+	margin: 0em;
+	color: #c7c7c7;
+}
+
+.entrydate a, .entrydate a:active, .entrydate a:visited  {
+	font-weight: normal;
+	color: #c7c7c7;
+}
+
+blockquote {
+	border-left-width: 2px;
+	margin-left: 0em;
+	margin-top: 1em;
+	margin-right: 5em;
+	margin-bottom: 1em;
+	padding-left: 0.75em;
+
+	/* subject to change */
+	font-size: 90%;
+	color: #666;
+
+	border-left-color: blue;
+	border-left-style: solid;
+	display: block;
+	float: left;
+}
+
+blockquote p {
+	margin: 0em;
+	padding-top: 1em;
+}
+
+blockquote p:first-child {
+	padding: 0em;
+}
+
+blockquote blockquote {
+	border-left-color: green;
+	font-size: 100%;
+	margin-right: 0em;
+	margin-bottom: 0em;
+}
+
+blockquote blockquote blockquote {
+	border-left-color: black;
+}
+
+cite {
+	display: block;
+	float: right;
+    color : #3366FF;
+	font-style: italic;
+}
+
+ol, ul {
+	color: #aaa;
+	margin-left: 0.5em;
+	padding-left: 0.75em;
+	margin-right: 5em;
+	margin-bottom: 0em;
+	margin-top: 0em;
+}
+
+ol {
+	/* margin-left: -10px; */
+	list-style-type: decimal;
+}
+
+div.nav {
+	position: absolute;
+	top: 0em;
+	padding: 2px 15px;
+	margin-left: 0em;
+	font-size: 11px;
+	color: gray;
+	border: 1px solid silver;
+	border-top: none;
+	background-color: #eee;
+	vertical-align: baseline;
+}
+
+.nav a, .nav a:active, .nav a:visited {
+	color: gray;
+	text-decoration: none;
+}
+
+div.image {
+	margin: 1em;
+	margin-bottom: 0em;
+	margin-right: 0em;
+	text-align:center;
+	border:1px solid #ccc;
+}
+
+div.caption {
+	margin-top: 0em;
+	padding-left: 1.2em;
+	color: #666;
+	font-size: 80%;
+}
+
+div.more {
+	float: left;
+	margin-left: 0.6em;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+}
+
+div.footnotes {
+	margin-top: 1.5em;
+	font-size: 80%;
+}
+
+div.footnotes hr {
+  border: none 0;
+  height: 1px;
+	border-top: 1px dotted #afafaf;
+	width: 25%;
+  margin: 0 auto 0 0;
+	text-align: left;
+}
+
+sup {
+	font-size: 55%;
+}
+
+div.edit {
+	border: 1px dotted rgb(204, 204, 204);
+	margin-left: 0.6em;
+	margin-right: 0.6em;
+	margin-top: 0.6em;
+	margin-bottom: 0.6em;
+	padding-left: 0.6em;
+	padding-right: 0.6em;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}
+
+div.edit:first-child {
+	margin-top: 0em;
+}
+
+div.editreason p:first-child {
+	margin: 0em;
+}
+
+div.edit p:first-child {
+	margin: 0em;
+}
+
+div.editdate {
+/*	float: left; */
+}
+
+p.editdate {
+	font-family: Georgia, 'Times New Roman', Times, Helvetica, Arial;
+	margin-bottom: 1em;
+	margin-top: 0em;
+	margin-right: 0.5em;
+	color: #c7c7c7;
+}
+
+div.comment_container {
+	border: 1px solid rgb(204, 204, 204);
+	margin: 10px 0pt;
+	padding: 10px 10px 10px 10px;
+}
+
+ul.comments {
+	list-style-type: none;
+	padding 0px;
+}
+
+li.comment:first-child {
+	margin: 5px 0px 5px 0px;
+	padding: 5px 0px 0px 0px;
+}
+
+li.comment {
+	border-top: 1px dotted rgb(204, 204, 204);
+	margin: 5px 0px 5px 0px;
+	padding: 5px 0px 0px 0px;
+}
+
+img.avatar {
+	display: block;
+	float: left;
+	height: 50px;
+	width: 50px;
+	margin-bottom: 5px;
+	margin-left: 0px;
+	margin-right: 5px;
+	margin-top: 0px;
+	border: none;
+}
+
+div.clearer {
+	clear: left;
+}
+
+/*
+<ul class="comments">
+	<li class="comment">
+		<a href="wob"><img class="avatar" src="" alt=""></a>
+		<div class="commentmeta"><em>date</em> <cite><a href="wob">name</a></cite></div>
+		<div class="commenttext">Wow.</div>
+		<div class="clearer"></div>
+	</li>
+</ul>
+*/

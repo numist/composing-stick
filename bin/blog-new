@@ -1,0 +1,47 @@
+#!/bin/bash
+BLOGROOT=$(dirname $0)/..
+
+source $BLOGROOT/lib/blog-common.sh
+
+if [ "x$1" == "x" ]; then
+	echo "usage: $0 <dirname>, be creative"
+	exit 1
+fi
+
+postdir=$BLOGROOT/data/$(php -r "echo date('Y');")/$1
+
+# make the post directory
+if [ -d $postdir ]; then
+	echo "post directory $postdir already exists"
+else
+	echo "SH : creating directory"
+	mkdir -p $postdir
+fi
+	
+# list tags into tags.txt if it does not exist
+if [ ! -f $postdir/tags.txt ]; then
+	echo "SH : creating tagfile"
+	for tag in $(get-all-tags); do
+		echo $tag >> $postdir/tags.txt
+	done
+fi
+
+# make skeleton post if it does not exist
+if [ ! -f $postdir/post.html ]; then
+	echo "SH : creating skeleton post"
+	echo "<p></p>" > $postdir/post.html
+fi
+
+echo "SH : $postdir prepared"
+
+if [ "x$EDITOR" != "x" ]; then
+	here=$(pwd)
+	cd $postdir
+	$EDITOR .
+	cd $here
+	# this isn't really necessary, since the script is over, but it would be
+	# weird tracking down bugs that were due to being in the wrong cwd as a
+	# result of not cleaning this up and adding more code later…
+fi
+
+echo "done"
