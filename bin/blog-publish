@@ -8,15 +8,16 @@ echo "SH : publish post at $1"
 post-valid $1
 
 location=$(get-location $1)
+tags=$(get-tags $1)
 
 php $BLOGROOT/bin/post-publish.php $location
 
 mkdir -p  $BLOGROOT/post/$(dirname $location)
 
 post-make-page $location
-# for tag in $tags; do
-#   post-make-tag $tag
-# done
+for tag in $tags; do
+  post-make-tag $tag
+done
 post-make-browse
 post-make-index
 post-make-feed
