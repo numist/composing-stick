@@ -15,4 +15,6 @@ $post = new Post($location);
 echo ($post->published() ? "updating" : "adding");
 echo " ".$post->location()."\n";
 
+$post->publish();
+
 ?>

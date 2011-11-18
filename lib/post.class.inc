@@ -65,7 +65,7 @@ class Post {
 		  
 		  // separate the ones we want vs the ones we don't
 		  for($i = 0; $i < count($tag); $i++) {
-		    if(strpos($tag[$i], "-") !== false)
+		    if(strpos($tag[$i], "-") === 0)
 		      $itags[] = substr($tag[$i], 1);
 		    else
 		      $tags[] = $tag[$i];
@@ -106,8 +106,6 @@ class Post {
 		}
 
 		$sql = "SELECT location FROM time_index WHERE time < '$before' AND time > '$after' $where ORDER BY time DESC LIMIT $num";
-		
-trigger_error($sql, E_USER_WARNING);
 		
 		$res = $db->query($sql, PDO::FETCH_ASSOC);
 		$arr = array();
@@ -220,12 +218,13 @@ trigger_error($sql, E_USER_WARNING);
 	public function publish() {
 		global $db;
 		$timestamp = $this->timestamp(true);
+		$location = $this->location();
 
 		$db->query("DELETE FROM time_index WHERE location = '$location'");
 		$db->query("DELETE FROM tag_index WHERE location = '$location'");
 
 		$db->query("INSERT INTO time_index(location, time) VALUES('$location', $timestamp)");
-		foreach($post->tags() as $tag) {
+		foreach($this->tags() as $tag) {
 			assert('strpos($tag, "\'") === false');
 			$db->query("INSERT INTO tag_index(location, tag) VALUES('$location', '$tag')");
 		}
@@ -307,10 +306,10 @@ trigger_error($sql, E_USER_WARNING);
     foreach($imgs as $img) {
       if(isset($img->src)) {
         if(strpos($img->src, "local://") === 0) {
-          list($width, $height, $type, $attr) = getimagesize(BLOGROOT."data/".$this->location().substr($img->src, 7));
+          list($width, $height, $type, $attr) = getimagesize(BLOGROOT."data/".$this->location().substr(urldecode($img->src), 7));
           $img->width = $width;
           $img->height = $height;
-        } else if(strpos($img->src, "root://") === 0) {
+        } else if(strpos(urldecode($img->src), "root://") === 0) {
           list($width, $height, $type, $attr) = getimagesize(BLOGROOT.substr($img->src, 7));
           $img->width = $width;
           $img->height = $height;
@@ -329,10 +328,9 @@ trigger_error($sql, E_USER_WARNING);
 		// footnotes!
 		$content = $this->doFootnotes($content);
 		
-    stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");
-		
     if(is_writable(BLOGROOT."tmp") && microtime(true) - $start > 0.05) {
       file_put_contents($tmpnam, $content);
+			stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");
     }
 
 		return $content;
