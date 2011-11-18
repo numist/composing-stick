@@ -73,32 +73,32 @@ function post-make-page {
 	
 	echo "PHP: generating post/$location.html"
 	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/lib/make-post.php $location > $BLOGROOT/post/$location.html || exit
+		$BLOGROOT/bin/make-post.php $location > $BLOGROOT/post/$location.html || exit
 }
 
 # 0 arguments
 function post-make-index {
 	echo "PHP: generating index.html"
 	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/lib/make-index.php > $BLOGROOT/index.html || exit
+		$BLOGROOT/bin/make-index.php > $BLOGROOT/index.html || exit
 }
 
 # 1 argument: tag name
 function post-make-tag {
 	echo "PHP: generating tag/$1.html"
 	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/lib/make-tag.php $1 > $BLOGROOT/tag/$1.html || exit
+		$BLOGROOT/bin/make-tag.php $1 > $BLOGROOT/tag/$1.html || exit
 }
 
 # 0 arguments
 function post-make-feed {
 	echo "PHP: generating feed.atom"
 	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/lib/make-atom.php > $BLOGROOT/feed.atom || exit
+		$BLOGROOT/bin/make-atom.php > $BLOGROOT/feed.atom || exit
 }
 
 function post-make-browse {
 	echo "PHP: generating browse.html"
 	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/lib/make-browse.php > $BLOGROOT/browse.html || exit
+		$BLOGROOT/bin/make-browse.php > $BLOGROOT/browse.html || exit
 }

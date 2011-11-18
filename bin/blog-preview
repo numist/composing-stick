@@ -12,6 +12,6 @@ tags=$(get-tags $1)
 
 echo "PHP: generating $BLOGROOT/data/$location/preview.html"
 php -d log_errors=On -d display_errors=Off \
-	$BLOGROOT/lib/make-post.php $location preview > $BLOGROOT/data/$location/preview.html
+	$BLOGROOT/bin/make-post.php $location preview > $BLOGROOT/data/$location/preview.html
 
 echo "done"
