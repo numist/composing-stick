@@ -119,4 +119,9 @@ function array_keys_exist($keys, $arr, $logic="all") {
   }
   return $logic == "all" ? true : false;
 }
+
+function id($id) {
+	return $id;
+}
+
 ?>
