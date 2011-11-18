@@ -17,6 +17,6 @@
 </head>
 <body>
   <div id="tags" style="display: none;" data-tags='<?= json_encode(isset($tags) ? $tags : array()) ?>' ></div>
-	<div id="container">
+	<div id="container"<? if(function_exists("postwidth")) echo ' style="width:'.(postwidth() + 43).'px;"'; ?>>
 		<? if(function_exists("nav")) { echo nav(); } ?>
   		<div id="entries">

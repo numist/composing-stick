@@ -9,7 +9,9 @@ class Link {
       return Link::index();
     }
 
-    if(!is_array($arr)) $arr = array($arr);
+    if(!is_array($arr)) {
+			return WEBROOT."tag/$arr.html";
+		}
     return WEBROOT."tag/?".implode("&", $arr);
   }
   

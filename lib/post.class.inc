@@ -7,18 +7,10 @@ class Post {
 
 	public function __construct($location) {
 		global $db;
-		
-		if(is_array($location)) {
-		  Post::checkArgs($location);
-		  assert('array_key_exists("location", $location)');
-		  foreach($location as $key => $val)
-		    $this->data[$key] = $val;
-		}
-		else {
-		  assert('is_string($location)');
-		  $this->data["location"] = $location;
-	  }
 
+	  assert('is_string($location)');
+		assert('substr($location, -1) != DIRECTORY_SEPARATOR');
+	  $this->data["location"] = $location;	
 	  $this->data["postpath"] = BLOGROOT."data/".$this->data["location"];
 		assert('is_dir($this->data["postpath"])');
 
@@ -202,6 +194,30 @@ class Post {
 		return $this->data["in_db"];
 	}
 	
+	public function width() {
+		if(!array_key_exists("width", $this->data)) {
+			$thewidth = 580;
+			$html = str_get_html($this->htmlContent());
+			$imgs = $html->find("img");
+	    // sigh. no library is perfect. no matches should = empty array.
+	    if($imgs === null) $imgs = array();
+
+	    foreach($imgs as $img) {
+	      if(isset($img->src)) {
+					if(strpos($img->src, WEBROOT) === 0) {
+						$img->src = BLOGROOT.substr($img->src, strlen(WEBROOT));
+					}
+	        list($width, $height, $type, $attr) = getimagesize($img->src);
+	        if($width > $thewidth) $thewidth = $width;
+	      }
+	    }
+			
+			$this->data["width"] = $thewidth;
+		}
+		
+		return $this->data["width"];
+	}
+	
 	private function content() {
 	  if(!array_key_exists("content", $this->data)) {
 	    assert('file_exists($this->postpath()."/post.html")');
@@ -211,9 +227,9 @@ class Post {
 	  return $this->data["content"];
 	}
 
-	/*
-	/* action functions
-	/**/
+	/***************************************************************************/
+	/* action functions                                                        */
+	/***************************************************************************/
 	
 	public function publish() {
 		global $db;
@@ -227,6 +243,77 @@ class Post {
 		foreach($this->tags() as $tag) {
 			assert('strpos($tag, "\'") === false');
 			$db->query("INSERT INTO tag_index(location, tag) VALUES('$location', '$tag')");
+		}
+	}
+	
+	public function parse() {
+		// get images that are non-local
+    $html = str_get_html($this->content());
+		$path = sanitize_path($this->postpath()).DIRECTORY_SEPARATOR;
+		
+    $imgs = $html->find("img");
+    // sigh. no library is perfect. no matches should = empty array.
+    if($imgs === null) $imgs = array();
+
+    foreach($imgs as $img) {
+      if(isset($img->src)) {
+        if(strpos($img->src, "local://") !== 0 &&
+				   strpos(urldecode($img->src), "root://") !== 0) {
+					
+					$fname = basename($img->src);
+					$i = 1;
+					while (file_exists($path.$fname)) {
+						$fname = filename_append(basename($img->src), "-".++$i);
+					}
+					stderr("caching ".$img->src."\n");
+					$data = file_get_contents($img->src) or trigger_error("bad link: ".$img->src."?", E_USER_ERROR);
+					file_put_contents($path.$fname, $data);
+					unset($data);
+					$img->src = "local://$fname";
+        }
+      }
+    }
+		// save to disk
+    $content = $this->data["content"] = $html->save();
+		file_put_contents($path."post.html",
+		                  $this->data["content"]);
+		
+		// create other-sized images where required
+		$short = strpos($content, "<!-- more -->") ?
+		         substr($content, 0, strpos($content, "<!-- more -->")) :
+		         $content;
+		$long = strpos($content, "<!-- more -->") && strpos($content, "<!-- less -->") !== false ?
+		        substr($content, 0, strpos($content, "<!-- less -->")).substr($content, strpos($content, "<!-- more -->")) :
+		        $content;
+		$sizes = array(
+			array($short, 570, "-small"),
+			array($long, 1024, "-medium")
+		);
+		
+		foreach($sizes as $size) {
+			$html = str_get_html($size[0]);
+
+	    $imgs = $html->find("img");
+	    // sigh. no library is perfect. no matches should = empty array.
+	    if($imgs === null) $imgs = array();
+
+	    foreach($imgs as $img) {
+	      if(isset($img->src) &&  strpos($img->src, "local://") === 0) {
+					$fname = substr($img->src, strlen("local://"));
+					$aname = filename_append($path.$fname, $size[2]);
+					list($width, $height, $type, $attr) = getimagesize($path.$fname);
+					if($width > $size[1] && !file_exists($aname)) {
+						exec('which convert', $out, $ret);
+						assert('$ret == 0');
+						$newwidth = $size[1];
+						$newheight = (int)($height * $newwidth / $width);
+						// RESIZE!
+						stderr("resizing $path$fname\n");
+						exec("convert ".$path.$fname." -resize ".$newwidth."x".$newheight." ".$aname, $out, $ret);
+						assert('$ret == 0');
+					}
+				}
+			}
 		}
 	}
 
@@ -267,6 +354,11 @@ class Post {
       return file_get_contents($tmpnam);
     }
 	  
+		// if we are running cli, run the preprocessor
+		if(php_sapi_name()==="cli") {
+			$this->parse();
+		}
+		
     $start = microtime(true);
 
 		/* cut up the post as necessary.  short posts display everything before
@@ -306,9 +398,21 @@ class Post {
     foreach($imgs as $img) {
       if(isset($img->src)) {
         if(strpos($img->src, "local://") === 0) {
-          list($width, $height, $type, $attr) = getimagesize(BLOGROOT."data/".$this->location().substr(urldecode($img->src), 7));
+					$postdir = BLOGROOT."data/".$this->location().DIRECTORY_SEPARATOR;
+					$fname = $ogname = substr(urldecode($img->src), strlen("local://"));
+					if(!$fullpost && file_exists($postdir.filename_append(urldecode($fname), "-small"))) {
+						$fname = filename_append($fname, "-small");
+					} else if(file_exists($postdir.filename_append(urldecode($fname), "-medium"))) {
+						$fname = filename_append($fname, "-medium");
+					}
+					$img->src = "local://".$fname;
+	
+          list($width, $height, $type, $attr) = getimagesize($postdir.$fname);
           $img->width = $width;
           $img->height = $height;
+					if($img->parent()->tag != "a" && $ogname != $fname) {
+						$img->outertext = '<a href="local://'.$ogname.'">'.$img->outertext.'</a>';
+					}
         } else if(strpos(urldecode($img->src), "root://") === 0) {
           list($width, $height, $type, $attr) = getimagesize(BLOGROOT.substr($img->src, 7));
           $img->width = $width;

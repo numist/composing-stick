@@ -24,6 +24,11 @@ function nav() {
 			<div class=\"nav\" style=\"margin-left: 130px\"><a href=\"".Link::browse()."\">browse</a></div>";
 }
 
+function postwidth() {
+	global $post;
+	return $post->width();
+}
+
 require(BLOGROOT."templates/header.inc");
 
 echo poast($post, true);

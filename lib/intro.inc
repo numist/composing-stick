@@ -87,7 +87,11 @@ function poast($post, $full=false) {
 	foreach($post->tags() as $tag) {
 		$ret .= ' <a href="'.Link::tag($tag).'"><img src="'.WEBROOT.'images/tags/'.$tag.'.png" border="0" width="16" height="16" /></a> ';
 	}
-	$ret .=	'</p></div><div class="entrybody">';
+	$ret .=	'</p></div><div class="entrybody"';
+	if(function_exists("postwidth")) {
+		$ret .= ' style="width:'.(postwidth() + 13).'px"';
+	}
+	$ret .= '>';
 	if(!$full) {
 		$ret .= $post->shortContent();
 	} else {
@@ -122,6 +126,10 @@ function array_keys_exist($keys, $arr, $logic="all") {
 
 function id($id) {
 	return $id;
+}
+
+function filename_append($fname, $str) {
+	return substr($fname, 0, strrpos($fname, ".")).$str.substr($fname, strrpos($fname, "."));
 }
 
 ?>
