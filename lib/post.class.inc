@@ -226,6 +226,7 @@ class Post {
   		$tags = file($this->postpath()."/tags.txt");
   		for($i = 0; $i < count($tags); $i++) {
   			$tags[$i] = trim($tags[$i]);
+				if(strlen($tags[$i]) == 0) continue;
       
         // XXX: empty string?  do we ever run into that?
   			assert('file_exists(BLOGROOT."images/tags/".$tags[$i].".png")');
