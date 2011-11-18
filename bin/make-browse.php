@@ -24,7 +24,7 @@ require(BLOGROOT."templates/header.inc");
 <p>darker tags have more posts.</p>
 <p><?
 
-$sql = "SELECT COUNT(*) AS count, tag FROM post_tags GROUP BY tag";
+$sql = "SELECT COUNT(*) AS count, tag FROM tag_index GROUP BY tag";
 $res = $db->query($sql, PDO::FETCH_ASSOC);
 $arr = array();
 $highest = 0;

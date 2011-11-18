@@ -5,9 +5,8 @@ require_once(BLOGROOT."lib/simple_html_dom.inc");
 class Post {
   private $data;
 
-	public function __construct($location, $use_db=true) {
+	public function __construct($location) {
 		global $db;
-		$this->data = array();
 		
 		if(is_array($location)) {
 		  Post::checkArgs($location);
@@ -26,100 +25,27 @@ class Post {
     /* if we have a db handle, it's faster to get data (if any exists) from
      * there than from the fs. prefetch it.
      */
-    if($use_db && $db && !array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data)) {
-
-      /* if any of our datas have been set already, this means we already
-       * wasted time on an imcomplete array argument. let the runner know and
-       * continue.
-       */
-      if(is_array($location) && array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data, "any")) {
-        trigger_error("array argument to Post was incomplete!", E_USER_NOTICE);
-      }
-
+    if($db && !array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data)) {
       // singleton post datas from db
-		  $sql = "SELECT * FROM posts WHERE location == '".str_replace("'", "''", $this->data["location"])."'";
+		  $sql = "SELECT * FROM time_index WHERE location == '".str_replace("'", "''", $this->data["location"])."'";
 		  $res = $db->query($sql, PDO::FETCH_ASSOC);
 		  assert('$res !== false && count($res) == 1');
-		 
 	    $arr = $res->fetch();
 	    $res->closeCursor();
 	    unset($res);
 
       if($arr === false) {
-				return;
+				$this->data["in_db"] = false;
+			} else {
+				$this->data["in_db"] = true;
 			}
-      
-      Post::checkArgs($arr);
-      
-      foreach($arr as $key => $val) {
-        switch($key) {
-          case "timestamp":
-            $this->data["timestamp"] = strtotime($val);
-            break;
-          default:
-		        $this->data[$key] = $val;
-		        break;
-        }
-      }
-      unset($arr);
-
-	    // tags from db
-		  if(is_numeric($this->data["postid"]) && !array_key_exists("tags", $this->data)) {
-		    $res = $db->query("SELECT tag FROM post_tags WHERE postid = ".$this->data["postid"], PDO::FETCH_ASSOC);
-
-    		$arr = array();
-    		while(false !== ($row = $res->fetch()))
-    			$arr[] = $row['tag'];
-    		unset($row);
-    		unset($res);
-
-    		Post::checkTags($arr);
-
-    		$this->data["tags"] = $arr;
-
-    		unset($arr);
-		  }
 	  }
-
 		return;
 	}
 
   /***************************************************************************/
   /* static functions                                                        */
   /***************************************************************************/
-
-  private static function checkArgs($arr) {
-    assert('is_array($arr)');
-
-    foreach($arr as $key => $val) {
-      switch($key) {
-        case "timestamp":
-          assert('strtotime($val) > 0');
-          break;
-        case "tags":
-          Post::checkTags($val);
-          break;
-        case "postid":
-          assert('is_numeric($val) && $val == round($val)');
-        case "content":
-        case "location":
-          break;
-        default:
-	        trigger_error("$key not an allowed data member of Post", E_USER_WARNING);
-      }
-    }
-  }
-
-  public static function checkTags($arr) {
-    assert('is_array($arr)');
-
-    foreach($arr as $tag) {
-      // this can only happen when someone is trying to hack us.  tags don't contain path characters.
-		  if(strpos($tag, DIRECTORY_SEPARATOR) !== false) trigger_error("bad dog, no biscuit", E_USER_ERROR);
-
-      assert('file_exists(BLOGROOT."images/tags/$tag.png")');
-    }
-  }
 
 	public static function getPosts($tag=null, $num=10, $before=0, $after=0) {
 		global $db;
@@ -130,8 +56,6 @@ class Post {
 		assert('$tag == null || is_array($tag)');
 
 		if($before == 0) $before = time();
-		$before = date("Y-m-d H:i:s", $before);
-		$after = date("Y-m-d H:i:s", $after);
 		
 	  $where = "";
 		// if we are getting specific tags, the query gets a lot more complicated,
@@ -150,7 +74,7 @@ class Post {
 		  
 		  // a where clause for the tags we want
 		  if(count($tags)) {
-		    $where .= "AND postid IN (SELECT postid FROM post_tags WHERE ";
+		    $where .= "AND location IN (SELECT location FROM tag_index WHERE ";
       
 		    for($i = 0; $i < count($tags); $i++) {
 		      assert('file_exists(BLOGROOT."images/tags/".$tags[$i].".png")');
@@ -166,7 +90,7 @@ class Post {
 		  
 		  // another where clause for the ones we don't
 		  if(count($itags)) {
-		    $where .= "AND postid NOT IN (SELECT postid FROM post_tags WHERE ";
+		    $where .= "AND location NOT IN (SELECT location FROM tag_index WHERE ";
 		  
 		    for($i = 0; $i < count($itags); $i++) {
 		      assert('file_exists(BLOGROOT."images/tags/".$itags[$i].".png")');
@@ -181,8 +105,10 @@ class Post {
 		  }
 		}
 
-    // XXX: if we need efficiency in building many post objects, select * and modify the ctor to take arrays.
-		$sql = "SELECT location FROM posts WHERE timestamp < '$before' AND timestamp > '$after' $where ORDER BY timestamp DESC LIMIT $num";
+		$sql = "SELECT location FROM time_index WHERE time < '$before' AND time > '$after' $where ORDER BY time DESC LIMIT $num";
+		
+trigger_error($sql, E_USER_WARNING);
+		
 		$res = $db->query($sql, PDO::FETCH_ASSOC);
 		$arr = array();
 
@@ -211,14 +137,6 @@ class Post {
   /* accessor functions for object data                                      */
   /***************************************************************************/
 
-	public function postid() {
-		if(!array_key_exists("postid", $this->data)) {
-			return false;
-		}
-    assert(is_numeric($this->data["postid"]));
-		return $this->data["postid"];
-	}
-
 	public function tags() {
 	  if(!array_key_exists("tags", $this->data)) {
 	    assert('file_exists($this->postpath()."/tags.txt")');
@@ -228,7 +146,6 @@ class Post {
   			$tags[$i] = trim($tags[$i]);
 				if(strlen($tags[$i]) == 0) continue;
       
-        // XXX: empty string?  do we ever run into that?
   			assert('file_exists(BLOGROOT."images/tags/".$tags[$i].".png")');
   			if(strpos($tags[$i], DIRECTORY_SEPARATOR) !== false) trigger_error("bad dog, no biscuit", E_USER_ERROR);
   		}
@@ -282,6 +199,10 @@ class Post {
 		
 		return $this->data["title"];
 	}
+
+	public function published() {
+		return $this->data["in_db"];
+	}
 	
 	private function content() {
 	  if(!array_key_exists("content", $this->data)) {
@@ -290,6 +211,24 @@ class Post {
 	  }
 	  
 	  return $this->data["content"];
+	}
+
+	/*
+	/* action functions
+	/**/
+	
+	public function publish() {
+		global $db;
+		$timestamp = $this->timestamp(true);
+
+		$db->query("DELETE FROM time_index WHERE location = '$location'");
+		$db->query("DELETE FROM tag_index WHERE location = '$location'");
+
+		$db->query("INSERT INTO time_index(location, time) VALUES('$location', $timestamp)");
+		foreach($post->tags() as $tag) {
+			assert('strpos($tag, "\'") === false');
+			$db->query("INSERT INTO tag_index(location, tag) VALUES('$location', '$tag')");
+		}
 	}
 
 	/***************************************************************************/

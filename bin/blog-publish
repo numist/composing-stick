@@ -8,34 +8,12 @@ echo "SH : publish post at $1"
 post-valid $1
 
 location=$(get-location $1)
-timestamp=$(get-timestamp $1)
-content=$(get-content $1)
-tags=$(get-tags $1)
 
-res=$(sqlite3 -line $DB "SELECT COUNT(*) FROM posts WHERE location = '$location';")
-if [[ "$res" == "COUNT(*) = 0" ]]; then
-	# insert new post
-	echo "SQL: inserting new post…"
-	sqlite3 -line $DB "INSERT INTO posts(timestamp, location, content) VALUES('$timestamp', '$location', '$content')"
-else
-	# update old post
-	echo "SQL: updating old post"
-	sqlite3 -line $DB "UPDATE posts SET timestamp = '$timestamp', content = '$content' WHERE location = '$location';"
-fi
-# get the post id
-postid=$(sqlite3 -line $DB "SELECT postid FROM posts WHERE location = '$location'")
-postid=${postid#postid = }
-
-# clear out the tags, we completely regenerate them.
-echo "SQL: updating tags"
-sqlite3 -line $DB "DELETE FROM post_tags WHERE postid = $postid;"
-for tag in $tags; do
- 	sqlite3 -line $DB "INSERT INTO post_tags VALUES($postid, '$tag');"
-done
+php $BLOGROOT/bin/post-publish.php $location
 
 mkdir -p  $BLOGROOT/post/$(dirname $location)
 
-post-make-page $postid
+post-make-page $location
 # for tag in $tags; do
 #   post-make-tag $tag
 # done

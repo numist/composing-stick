@@ -45,7 +45,7 @@ foreach($posts as $post)
     <title><?= $post->title() ?></title>
     <link rel="alternate" type="text/html"
      href="<?= Link::post($post) ?>"/>
-    <id>tag:numist.net,<?= date("Y-m-d", $post->timestamp(true)) ?>:<?= $post->postid() ?></id>
+    <id>tag:numist.net,<?= date("Y-m-d", $post->timestamp(true)) ?></id>
     <updated><?= date("c", $post->updatedstamp(true)) ?></updated>
     <published><?= date("c", $post->timestamp(true)) ?></published>
     <author>

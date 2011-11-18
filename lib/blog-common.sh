@@ -66,10 +66,9 @@ function post-valid {
 	fi
 }
 
-# 1 argument: postid
+# 1 argument: location
 function post-make-page {
-	location=$(sqlite3 -line $DB "SELECT location FROM posts WHERE postid = '$1'")
-	location=${location#location = }
+	location=$1
 	
 	echo "PHP: generating post/$location.html"
 	php -d log_errors=On -d display_errors=Off \
