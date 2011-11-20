@@ -83,7 +83,7 @@ function ordered_array_cleanup($irr) {
 
 // return the HTMLified post <div> with all the dressings.
 function poast($post, $full=false) {
-	$ret = '<div class="entry" id="'.str_replace(DIRECTORY_SEPARATOR, "-", $post->location()).'"><div class="entrycategory"><p>';
+	$ret = "\n".'<article><div class="entry" id="'.str_replace(DIRECTORY_SEPARATOR, "-", $post->location()).'"><div class="entrycategory"><p>';
 	foreach($post->tags() as $tag) {
 		$ret .= ' <a href="'.Link::tag($tag).'"><img src="'.WEBROOT.'images/tags/'.$tag.'.png" border="0" width="16" height="16" /></a> ';
 	}
@@ -103,7 +103,7 @@ function poast($post, $full=false) {
 		$ret .=	'<div class="more"><a href="'.Link::post($post, "local").'">more…</a></div>';
 	}
 
-	$ret .=	'<div class="entrydate"><p class="entrydate"><a href="'.Link::post($post, "local").'">posted on '.$post->timestamp().'</a><br /></p></div><br style="clear:both;" /></div>';
+	$ret .=	'<div class="entrydate"><p class="entrydate"><a href="'.Link::post($post, "local").'">posted on '.$post->timestamp().'</a><br /></p></div><br style="clear:both;" /></div></article>'."\n\n";
 	
 	return $ret;
 }
@@ -126,6 +126,10 @@ function array_keys_exist($keys, $arr, $logic="all") {
 
 function id($id) {
 	return $id;
+}
+
+function array_top($arr) {
+	return reset($arr);
 }
 
 function filename_append($fname, $str) {

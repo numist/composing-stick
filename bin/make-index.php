@@ -5,7 +5,7 @@ define("WEBROOT", "./");
 require_once(BLOGROOT."lib/intro.inc");
 require_once(BLOGROOT."lib/post.class.inc");
 
-assert('$argc == 1');
+assert('php_sapi_name() == "cli"');
 
 function head() {
 	return "<link href=\"".Link::feed()."\" type=\"application/atom+xml\" rel=\"alternate\" title=\"posts\" />";
