@@ -1,5 +1,7 @@
 <?
 
+$page_start = microtime(true);
+
 if(php_sapi_name() ==="cli") {
 	trigger_error("this script requires variables set by an httpd to locate itself", E_USER_ERROR);
 }
@@ -7,7 +9,10 @@ if(php_sapi_name() ==="cli") {
 define("BLOGROOT", "./");
 
 $webroot = ((isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ?
-           "https" : "http")."://".$_SERVER["SERVER_NAME"].dirname($_SERVER["SCRIPT_NAME"])."/";
+           "https" : "http")."://".$_SERVER["SERVER_NAME"].dirname($_SERVER["SCRIPT_NAME"]);
+if(substr($webroot, -1) != "/") {
+	$webroot .= "/";
+}
 define("WEBROOT", $webroot);
 
 require_once(BLOGROOT."lib/intro.inc");
@@ -73,12 +78,12 @@ $posts = Post::getPages($start, $pages);
 foreach($posts as $post) {
 	echo poast($post);
 }
-?>
-	
-	<article id="more"><p><a href="<?= $webroot ?>?/page/<?= ($start + $pages) ?>/">more…</a></p></article>
-	
-<?
+
+if(count($posts) == $pages * 10) {
+	?><article id="more"><p><a href="<?= $webroot ?>?/page/<?= ($start + $pages) ?>/">more…</a></p></article><?
+}
 
 require(BLOGROOT."templates/footer.inc");
 
 ?>
+<!-- <?= number_format((microtime(true) - $page_start), 4); ?> -->
