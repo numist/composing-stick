@@ -10,8 +10,8 @@ class Post {
 
 	  assert('is_string($location)');
 		assert('substr($location, -1) != DIRECTORY_SEPARATOR');
-	  $this->data["location"] = $location;	
-	  $this->data["postpath"] = BLOGROOT."data/".$this->data["location"];
+	  $this->data["location"] = $location;
+	  $this->data["postpath"] = BLOGROOT."data/".$location;
 		assert('is_dir($this->data["postpath"])');
 
     /* if we have a db handle, it's faster to get data (if any exists) from
@@ -39,10 +39,14 @@ class Post {
   /* static functions                                                        */
   /***************************************************************************/
 
+	public static function getPages($start, $pages) {
+		return POST::getPosts(null, (($start - 1) * 10).",".($pages * 10));
+	}
+
 	public static function getPosts($tag=null, $num=10, $before=0, $after=0) {
 		global $db;
 		// argument checking
-		assert('is_numeric($num) && round($num) == $num');
+		assert('preg_match("/[0-9]+,?[0-9]*/", $num) == 1');
 		assert('is_numeric($before)');
 		assert('is_numeric($after)');
 		assert('$tag == null || is_array($tag)');
@@ -129,7 +133,7 @@ class Post {
 
 	public function tags() {
 	  if(!array_key_exists("tags", $this->data)) {
-	    assert('file_exists($this->postpath()."/tags.txt")');
+    	assert('file_exists($this->postpath()."/tags.txt")');
 	    
   		$tags = file($this->postpath()."/tags.txt");
   		for($i = 0; $i < count($tags); $i++) {
@@ -345,7 +349,7 @@ class Post {
 	  $content = $this->content();
 	  
 		// generating htmlContent can be slow, so we cache!
-  	$md5 = md5($content.WEBROOT.BLOGROOT);
+  	$md5 = md5($content.BLOGROOT);
   	$loc = str_replace(DIRECTORY_SEPARATOR, "-", $this->location());
   	$tmpnam = BLOGROOT."tmp/$loc-$md5-".($fullpost ? "f" : "s");
 		if(php_sapi_name() !=="cli") {
@@ -434,7 +438,12 @@ class Post {
 		
     if(is_writable(BLOGROOT."tmp") && microtime(true) - $start > 0.05) {
       file_put_contents($tmpnam, $content);
-			stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");
+			if(php_sapi_name() == "cli") {
+				stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");
+			} else {
+				trigger_error($this->location().": ".number_format(microtime(true) - $start, 3)."s", E_USER_WARNING);
+			}
+			
     }
 
 		return $content;
