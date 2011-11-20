@@ -301,7 +301,7 @@ class Post {
 	      if(isset($img->src) &&  strpos($img->src, "local://") === 0) {
 					$fname = substr($img->src, strlen("local://"));
 					$aname = filename_append($path.$fname, $size[2]);
-					list($width, $height, $type, $attr) = getimagesize($path.$fname);
+					list($width, $height, $type, $attr) = getimagesize($path.urldecode($fname));
 					if($width > $size[1] && !file_exists($aname)) {
 						exec('which convert', $out, $ret);
 						assert('$ret == 0');
@@ -344,18 +344,18 @@ class Post {
 	public function htmlContent($fullpost=true) {
 	  $content = $this->content();
 	  
-    // generating htmlContent can be slow, so we cache!
-    $md5 = md5($content.WEBROOT.BLOGROOT);
-    $loc = str_replace(DIRECTORY_SEPARATOR, "-", $this->location());
-    $tmpnam = BLOGROOT."tmp/$loc-$md5-".($fullpost ? "f" : "s");
-    if(is_dir(BLOGROOT."tmp") && file_exists($tmpnam)) {
-      if(is_writable($tmpnam))
-        touch($tmpnam);
-      return file_get_contents($tmpnam);
-    }
-	  
-		// if we are running cli, run the preprocessor
-		if(php_sapi_name()==="cli") {
+		// generating htmlContent can be slow, so we cache!
+  	$md5 = md5($content.WEBROOT.BLOGROOT);
+  	$loc = str_replace(DIRECTORY_SEPARATOR, "-", $this->location());
+  	$tmpnam = BLOGROOT."tmp/$loc-$md5-".($fullpost ? "f" : "s");
+		if(php_sapi_name() !=="cli") {
+			if(is_dir(BLOGROOT."tmp") && file_exists($tmpnam)) {
+      	if(is_writable($tmpnam))
+        	touch($tmpnam);
+      	return file_get_contents($tmpnam);
+    	}
+    } else {
+			// if we are running cli, run the preprocessor
 			$this->parse();
 		}
 		
@@ -518,7 +518,7 @@ class Post {
 			$time = $edit->time;
 			
 			$edit->outertext = '<div class="edit">
-				<div class="editdate"><p class="editdate">edited on '.Post::formatstamp($time).' at 11:58 :</p></div>
+				<div class="editdate"><p class="editdate">edited on '.Post::formatstamp($time).':</p></div>
 				<div class="editreason">'.$edit->innertext.'</div>
 			</div>';
 		}
