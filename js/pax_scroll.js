@@ -179,10 +179,8 @@ function pInfScrExecute() {
 					// remove loading feedback
 					pInfScrNode.next().remove();
 
-					// XXX: UGLY
 					// use nodetype to grab elements
-					//var filteredData = $(data).filter("article").nodetype(1);
-					var filteredData = $(data).filter("div#container").children().filter("div#entries").children().filter("article");
+					var filteredData = $(data).find("article");
 
 					// count the number of items returned
 					pInfScrCount.push(filteredData.length);
