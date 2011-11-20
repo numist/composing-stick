@@ -29,7 +29,7 @@ date_default_timezone_set('America/Los_Angeles');
 assert('defined("WEBROOT")');
 assert('defined("BLOGROOT")');
 assert('substr(BLOGROOT, -1) == DIRECTORY_SEPARATOR');
-assert('substr(WEBROOT, -1) == DIRECTORY_SEPARATOR');
+assert('substr(WEBROOT, -1) == "/"');
 assert('file_exists(BLOGROOT."data/blog.db")');
 
 require_once(BLOGROOT."lib/link.class.inc");
