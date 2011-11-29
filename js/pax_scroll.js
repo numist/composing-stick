@@ -166,7 +166,7 @@ function pInfScrExecute() {
 					pInfScrState = pInfScrStates.loading;
 					
 					// display loading feedback
-					pInfScrNode.clone().empty().insertAfter(pInfScrNode).append('<p>loading…</p>');
+					pInfScrNode.clone().empty().insertBefore(pInfScrNode).append('<p>loading…</p>');
 
 					// hide 'more' browser
 					pInfScrNode.hide();
@@ -191,7 +191,7 @@ function pInfScrExecute() {
 				},
 				complete: function(jqXHR, textStatus) {
 					// remove loading feedback
-					pInfScrNode.next().remove();
+					pInfScrNode.prev().remove();
 					
 					// if our XHR did not add data to the page,
 					if(pInfScrState != pInfScrStates.success) {
