@@ -1,8 +1,13 @@
 // http://tumbledry.org/2011/05/12/screw_hashbangs_building
 
 // (4)
+var pInfScrStates = {
+	idle: 0,
+	loading: 1,
+	success: 2
+}
 // pInfScr = pax infinite scroll
-var pInfScrLoading = false;
+var pInfScrState = pInfScrStates.idle;
 
 // turn on or off intra-page navigation when back button used
 // 1 = back button navigates WITHIN infinitely scrolling page
@@ -148,7 +153,7 @@ function pInfScrExecute() {
 	// an AJAX request for content to append to the current page is made if:
 	// (1) scroll to 200px or less from bottom of document
 	// (2) not currently in process of loading new content
-	if($(document).height() - 200 < $(document).scrollTop() + $(window).height() && pInfScrLoading == false) {
+	if($(document).height() - 200 < $(document).scrollTop() + $(window).height() && pInfScrState == pInfScrStates.idle) {
 	
 		// get URL
 		pInfScrNode = $('article#more').last();
@@ -166,31 +171,41 @@ function pInfScrExecute() {
 				url: pInfScrURL,
 				beforeSend: function() {
 					// block potentially concurrent requests
-					pInfScrLoading = true;
+					pInfScrState = pInfScrStates.loading;
 					
 					// display loading feedback
 					pInfScrNode.clone().empty().insertAfter(pInfScrNode).append('<p>loading…</p>');
 
 					// hide 'more' browser
 					pInfScrNode.hide();
-					
 				},
 				success: function(data) {
-					// remove loading feedback
-					pInfScrNode.next().remove();
-
 					// use nodetype to grab elements
 					var filteredData = $(data).find("article");
 
-					// count the number of items returned
-					pInfScrCount.push(filteredData.length);
+					if(filteredData.length > 0) {
+						// no errors!
+						pInfScrState = pInfScrStates.success;
+						
+						// count the number of items returned
+						pInfScrCount.push(filteredData.length);
 					
-					// drop data into document
-					filteredData.insertAfter(pInfScrNode);
+						// drop data into document
+						filteredData.insertAfter(pInfScrNode);
+					}
+				},
+				complete: function(jqXHR, textStatus) {
+					// remove loading feedback
+					pInfScrNode.next().remove();
+					
+					// if our XHR did not add data to the page,
+					if(pInfScrState != pInfScrStates.success) {
+						// unhide 'more' browser
+						pInfScrNode.show();
+					}
 					
 					// unblock more requests (reset loading status)
-					pInfScrLoading = false;
-					
+					pInfScrState = pInfScrStates.idle;
 				},
 				dataType: "html"
 			});	
