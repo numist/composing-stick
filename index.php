@@ -25,7 +25,7 @@ function head() { ?>
 		// Add a script element as a child of the body
 		function downloadJSAtOnload() {
 		  var element = document.createElement("script");
-		  element.src = "<?= WEBROOT ?>js/pax_scroll.js?v=7";
+		  element.src = "<?= WEBROOT ?>js/pax_scroll.js?v=11";
 		  document.body.appendChild(element);
 		}
 		// Check for browser support of event handling capability
@@ -79,7 +79,7 @@ foreach($posts as $post) {
 	echo poast($post);
 }
 
-if(count($posts) == $pages * 10) {
+if(count($posts) && count(Post::getPosts(null, 10, $posts[count($posts) - 1]->timestamp(true)))) {
 	?><article id="more"><p><a href="<?= $webroot ?>?/page/<?= ($start + $pages) ?>/">more…</a></p></article><?
 }
 
