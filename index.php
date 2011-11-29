@@ -25,7 +25,7 @@ function head() { ?>
 		// Add a script element as a child of the body
 		function downloadJSAtOnload() {
 		  var element = document.createElement("script");
-		  element.src = "<?= WEBROOT ?>js/pax_scroll.js?v=11";
+		  element.src = "<?= WEBROOT ?>js/pax_scroll.js?v=12";
 		  document.body.appendChild(element);
 		}
 		// Check for browser support of event handling capability

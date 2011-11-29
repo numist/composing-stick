@@ -84,65 +84,57 @@ function pInfScrExecute() {
 	}
 
 	function pathchange(path) {	
-		// if there is history support, use it
-		if (detectHistorySupport()) {
-			// remember: pushState/replaceState only allows same-origin changes
-			// https://developer.mozilla.org/en/DOM/Manipulating_the_browser_history#The_pushState().c2.a0method
-
-			// as explicated in the "Pax browsing" comment above, we need a base page number
-			// set ONLY ONCE per complete page load
-			if(pInfScrUrlCarryPageBase == null) {
-				/* path will be checked for in two places
-				(1) browser URL, where it looks like this: 
-						/category/page/xx/
-						or this:
-						/category/pages/xx-yy/
-				(2) the link to the next page:
-						/category/page/zz/ in the path variable
-				
-				xx is the number we are looking for (pInfScrUrlCarryPageBase)
-				yy is a number greater than xx
-				zz is xx+1
-				
-				Naturally, we put precedence on version (1); it's less brittle
-				*/
-
-				// instanatiate a regular expression that will match the following
-				// /page/ or /pages/
-				// 1+ 		numbers
-				// 0 or 1 dash
-				// 0+ 		numbers
-				// 0 or 1 forward slash
-				// tacked to the end of the string 
-				regexp = /\/pages?\/([0-9]+)-?[0-9]*\/?$/;
-				
-				// (1)
-				if(regexp.test(window.location.href)) {
-					nextPage = regexp.exec(window.location.href);
-					pInfScrUrlCarryPageBase = nextPage[1];
-				}
-				// (2)
-				else {
-					nextPage = regexp.exec(path);
-					// so xx - 1 will give us the page base				
-					pInfScrUrlCarryPageBase = nextPage[1] - 1;
-				}				
-			}
-
-			// modify path with xx
-			path = path.replace("page/","pages/"+pInfScrUrlCarryPageBase+"-");
+		// remember: pushState/replaceState only allows same-origin changes
+		// https://developer.mozilla.org/en/DOM/Manipulating_the_browser_history#The_pushState().c2.a0method
+    
+		// as explicated in the "Pax browsing" comment above, we need a base page number
+		// set ONLY ONCE per complete page load
+		if(pInfScrUrlCarryPageBase == null) {
+			/* path will be checked for in two places
+			(1) browser URL, where it looks like this: 
+					/category/page/xx/
+					or this:
+					/category/pages/xx-yy/
+			(2) the link to the next page:
+					/category/page/zz/ in the path variable
 			
-			// change state and report that it worked
-			if(pInfScrIntraPageBackButton == 1)
-				window.history.pushState(null, null, path);
-			else
-				window.history.replaceState(null, null, path);
-			return true;
+			xx is the number we are looking for (pInfScrUrlCarryPageBase)
+			yy is a number greater than xx
+			zz is xx+1
+			
+			Naturally, we put precedence on version (1); it's less brittle
+			*/
+    
+			// instanatiate a regular expression that will match the following
+			// /page/ or /pages/
+			// 1+ 		numbers
+			// 0 or 1 dash
+			// 0+ 		numbers
+			// 0 or 1 forward slash
+			// tacked to the end of the string 
+			regexp = /\/pages?\/([0-9]+)-?[0-9]*\/?$/;
+			
+			// (1)
+			if(regexp.test(window.location.href)) {
+				nextPage = regexp.exec(window.location.href);
+				pInfScrUrlCarryPageBase = nextPage[1];
+			}
+			// (2)
+			else {
+				nextPage = regexp.exec(path);
+				// so xx - 1 will give us the page base				
+				pInfScrUrlCarryPageBase = nextPage[1] - 1;
+			}				
 		}
-	
-		// otherwise, report that the pathchange failed
+    
+		// modify path with xx
+		path = path.replace("page/","pages/"+pInfScrUrlCarryPageBase+"-");
+		
+		// change state and report that it worked
+		if(pInfScrIntraPageBackButton == 1)
+			window.history.pushState(null, null, path);
 		else
-			return false;
+			window.history.replaceState(null, null, path);
 	}
 
 	// doc.height()	unitless pixel value of HTML document height
@@ -163,7 +155,7 @@ function pInfScrExecute() {
 		// (3) node was found
 		// (3.5) node is not hidden
 		// (4) pathchange is supported, to preserve back button functionality (SCREW THE HASH BANG OPTION)
-		if(pInfScrNode.length > 0 && pInfScrNode.css('display') != 'none' && pathchange(pInfScrURL)) {
+		if(pInfScrNode.length > 0 && pInfScrNode.css('display') != 'none' && detectHistorySupport()) {
 		
 			// node was found, pathchange worked... make request
 			$.ajax({
@@ -192,6 +184,9 @@ function pInfScrExecute() {
 					
 						// drop data into document
 						filteredData.insertAfter(pInfScrNode);
+						
+						// update the address bar
+						pathchange(pInfScrURL)
 					}
 				},
 				complete: function(jqXHR, textStatus) {
