@@ -5,3 +5,8 @@ data/*
 .DS_Store
 drafts/*
 images/*
+*.html
+feed.atom
+sync.sh
+TODO
+favicon.ico
