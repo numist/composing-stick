@@ -19,22 +19,10 @@ require_once(BLOGROOT."lib/intro.inc");
 require_once(BLOGROOT."lib/post.class.inc");
 
 function head() { ?>
-	<script src="<?= WEBROOT ?>js/jquery.ba-dotimeout.min.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript">
-		// http://code.google.com/speed/page-speed/docs/payload.html#DeferLoadingJS
-		// Add a script element as a child of the body
-		function downloadJSAtOnload() {
-		  var element = document.createElement("script");
-		  element.src = "<?= WEBROOT ?>js/pax_scroll.js?v=13";
-		  document.body.appendChild(element);
-		}
-		// Check for browser support of event handling capability
-		if (window.addEventListener)
-		  window.addEventListener("load", downloadJSAtOnload, false);
-		else if (window.attachEvent)
-		  window.attachEvent("onload", downloadJSAtOnload);
-		else 
-		  window.onload = downloadJSAtOnload;
+		jsLoad("<?= WEBROOT ?>js/jquery.ba-dotimeout.min.js");
+		jsLoad("<?= WEBROOT ?>js/infScr-1.0.0.min.js");
+		jsLoad("<?= WEBROOT ?>js/jk-1.0.0.min.js");
 	</script>
 	<link href="<?= Link::feed() ?>" type="application/atom+xml" rel="alternate" title="posts" />
 	<?
@@ -51,8 +39,6 @@ function title() {
 
 require(BLOGROOT."templates/header.inc");
 
-// array(4) { [0]=> string(8) "/page/1/" [1]=> string(4) "page" [2]=> string(1) "1" [3]=> string(0) "" }
-// array(4) { [0]=> string(11) "/pages/1-2/" [1]=> string(5) "pages" [2]=> string(1) "1" [3]=> string(1) "2" }
 preg_match("/\/(pages?)\/([0-9]+)-?([0-9]*)\/?$/", $_SERVER["REQUEST_URI"], $matches);
 if(count($matches) < 4) {
 	$start = $pages = 1;
