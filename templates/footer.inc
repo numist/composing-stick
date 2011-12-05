@@ -11,6 +11,4 @@
 	_uacct = "UA-432885-1";
 	urchinTracker();
 </script>
-<!-- Done! -->
-
 </html>
