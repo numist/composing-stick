@@ -19,7 +19,6 @@ for tag in $tags; do
   post-make-tag $tag
 done
 post-make-browse
-#post-make-index
 post-make-feed
 
 # handle outgoing pingbacks
