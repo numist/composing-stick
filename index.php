@@ -21,8 +21,8 @@ require_once(BLOGROOT."lib/post.class.inc");
 function head() { ?>
 	<script type="text/javascript">
 		jsLoad("<?= WEBROOT ?>js/jquery.ba-dotimeout.min.js");
-		jsLoad("<?= WEBROOT ?>js/infScr-1.0.1.min.js");
-		jsLoad("<?= WEBROOT ?>js/jk-1.0.2.min.js");
+		jsLoad("<?= WEBROOT ?>js/infScr-1.0.2.min.js");
+		jsLoad("<?= WEBROOT ?>js/jk-1.0.4.min.js");
 	</script>
 	<link href="<?= Link::feed() ?>" type="application/atom+xml" rel="alternate" title="posts" />
 	<?
