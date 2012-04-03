@@ -62,7 +62,7 @@ function post-valid {
 	fi
 	if [ ! -f $1/timestamp.txt ]; then
 		echo "SH : WARN: no timestamp, creating"
-		php -r "echo date('Y-m-d H:i:s');" > $1/timestamp.txt
+		php -r "echo date('r');" > $1/timestamp.txt
 	fi
 }
 
