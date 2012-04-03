@@ -20,8 +20,7 @@ function title() {
 
 function nav() {
 	return "<div class=\"nav\"><a href=\"".Link::index()."\">home</a></div>
-			<div class=\"nav\" style=\"margin-left: 65px\"><a href=\"".Link::about()."\">about</a></div>
-			<div class=\"nav\" style=\"margin-left: 130px\"><a href=\"".Link::browse()."\">browse</a></div>";
+			<div class=\"nav\" style=\"margin-left: 65px\"><a href=\"".Link::about()."\">about</a></div>";
 }
 
 function postwidth() {

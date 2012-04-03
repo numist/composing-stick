@@ -83,11 +83,7 @@ function ordered_array_cleanup($irr) {
 
 // return the HTMLified post <div> with all the dressings.
 function poast($post, $full=false) {
-	$ret = "\n".'<article><div class="entry" id="'.str_replace(DIRECTORY_SEPARATOR, "-", $post->location()).'"><div class="entrycategory"><p>';
-	foreach($post->tags() as $tag) {
-		$ret .= ' <a href="'.Link::tag($tag).'"><img src="'.WEBROOT.'images/tags/'.$tag.'.png" border="0" width="16" height="16" /></a> ';
-	}
-	$ret .=	'</p></div><div class="entrybody"';
+	$ret = "\n".'<article><div class="entry" id="'.str_replace(DIRECTORY_SEPARATOR, "-", $post->location()).'"><div class="entrybody"';
 	if(function_exists("postwidth")) {
 		$ret .= ' style="width:'.(postwidth() + 13).'px"';
 	}

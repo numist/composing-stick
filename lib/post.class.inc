@@ -56,49 +56,7 @@ class Post {
 	  $where = "";
 		// if we are getting specific tags, the query gets a lot more complicated,
 		if($tag != null) {
-		  $itags = array();
-		  $tags = array();
-		  
-		  // separate the ones we want vs the ones we don't
-		  for($i = 0; $i < count($tag); $i++) {
-		    if(strpos($tag[$i], "-") === 0)
-		      $itags[] = substr($tag[$i], 1);
-		    else
-		      $tags[] = $tag[$i];
-	    }
-	    unset($tag);
-		  
-		  // a where clause for the tags we want
-		  if(count($tags)) {
-		    $where .= "AND location IN (SELECT location FROM tag_index WHERE ";
-      
-		    for($i = 0; $i < count($tags); $i++) {
-		      assert('file_exists(BLOGROOT."images/tags/".$tags[$i].".png")');
-		      if(strpos($tags[$i], DIRECTORY_SEPARATOR) !== false) trigger_error("bad dog, no biscuit", E_USER_ERROR);
-
-		      $where .= "tag == '".$tags[$i]."'";
-		      if($i < count($tags) - 1)
-		        $where .= " OR ";
-		      else
-		        $where .= ") ";
-		    }
-		  }
-		  
-		  // another where clause for the ones we don't
-		  if(count($itags)) {
-		    $where .= "AND location NOT IN (SELECT location FROM tag_index WHERE ";
-		  
-		    for($i = 0; $i < count($itags); $i++) {
-		      assert('file_exists(BLOGROOT."images/tags/".$itags[$i].".png")');
-		      if(strpos($itags[$i], DIRECTORY_SEPARATOR) !== false) trigger_error("bad dog, no biscuit", E_USER_ERROR);
-
-		      $where .= "tag == '".$itags[$i]."'";
-		      if($i < count($itags) - 1)
-		        $where .= " OR ";
-		      else
-		        $where .= ") ";
-		    }
-		  }
+			trigger_error("sorry, no tags anymore", E_USER_ERROR);
 		}
 
 		$sql = "SELECT location FROM time_index WHERE time < '$before' AND time > '$after' $where ORDER BY time DESC LIMIT $num";
@@ -313,7 +271,7 @@ class Post {
 						$newheight = (int)($height * $newwidth / $width);
 						// RESIZE!
 						stderr("resizing $path$fname\n");
-						exec("convert ".$path.$fname." -resize ".$newwidth."x".$newheight." ".$aname, $out, $ret);
+						exec("convert \"".$path.$fname."\" -resize ".$newwidth."x".$newheight." \"".$aname."\"", $out, $ret);
 						assert('$ret == 0');
 					}
 				}
@@ -436,7 +394,7 @@ class Post {
 		// footnotes!
 		$content = $this->doFootnotes($content);
 		
-    if(is_writable(BLOGROOT."tmp") && microtime(true) - $start > 0.05) {
+    if(is_writable(BLOGROOT."tmp") && (microtime(true) - $start > 0.05 || php_sapi_name() == "cli")) {
       file_put_contents($tmpnam, $content);
 			if(php_sapi_name() == "cli") {
 				stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");

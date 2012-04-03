@@ -82,22 +82,9 @@ function post-make-index {
 		$BLOGROOT/bin/make-index.php > $BLOGROOT/index.html || exit
 }
 
-# 1 argument: tag name
-function post-make-tag {
-	echo "PHP: generating tag/$1.html"
-	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/bin/make-tag.php $1 > $BLOGROOT/tag/$1.html || exit
-}
-
 # 0 arguments
 function post-make-feed {
 	echo "PHP: generating feed.atom"
 	php -d log_errors=On -d display_errors=Off \
 		$BLOGROOT/bin/make-atom.php > $BLOGROOT/feed.atom || exit
-}
-
-function post-make-browse {
-	echo "PHP: generating browse.html"
-	php -d log_errors=On -d display_errors=Off \
-		$BLOGROOT/bin/make-browse.php > $BLOGROOT/browse.html || exit
 }

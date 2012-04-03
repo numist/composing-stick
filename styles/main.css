@@ -15,7 +15,7 @@ span.list {
 }
 
 div.entrybody p {
-	margin-left: 1em;
+    margin-left: 0.6em;
 }
 
 img {
@@ -59,8 +59,9 @@ h4 {
 }
 
 #container {
-	margin: 40px auto;
-	width: 623px;
+	margin: 10px auto;
+	margin-top: 40px;
+	width: 590px;
 	text-align: left;
 }
 
@@ -79,8 +80,8 @@ h4 {
 }
 
 .entrybody {
-	width: 593px;
-	margin-left: 10px;
+	/*width: 593px;
+	   margin-left: 10px;*/
 	float: left;
 }
 

@@ -32,10 +32,6 @@ class Link {
     return WEBROOT."about.html";
   }
   
-  public static function browse() {
-    return WEBROOT."browse.html";
-  }
-  
   public static function feed($tags=null) {
     if($tags == null || (is_array($tags) && count($tags) == 0)) {
       return WEBROOT."feed.atom";

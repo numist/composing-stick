@@ -29,8 +29,7 @@ function head() { ?>
 }
 
 function nav() {
-	return "<div class=\"nav\"><a href=\"".Link::about()."\">about</a></div>
-			<div class=\"nav\" style=\"margin-left: 65px\"><a href=\"".Link::browse()."\">browse</a></div>";
+	return "<div class=\"nav\"><a href=\"".Link::about()."\">about</a></div>";
 }
 
 function title() {

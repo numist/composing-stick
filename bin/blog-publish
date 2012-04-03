@@ -15,10 +15,6 @@ php $BLOGROOT/bin/post-publish.php $location
 mkdir -p  $BLOGROOT/post/$(dirname $location)
 
 post-make-page $location
-for tag in $tags; do
-  post-make-tag $tag
-done
-post-make-browse
 post-make-feed
 
 # handle outgoing pingbacks
