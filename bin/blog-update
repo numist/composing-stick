@@ -1,0 +1,6 @@
+#!/bin/bash
+BLOGROOT=$(dirname $0)/..
+
+source $BLOGROOT/lib/blog-common.sh
+
+post-make-feed
