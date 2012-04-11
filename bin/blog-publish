@@ -8,8 +8,8 @@ echo "SH : publish post at $1"
 postdir=$BLOGROOT/data/$(php -r "echo date('Y');")/$1
 post-valid $postdir
 
-location=$(get-location $1)
-tags=$(get-tags $1)
+location=$(get-location $postdir)
+tags=$(get-tags $postdir)
 
 php $BLOGROOT/bin/post-publish.php $location
 
