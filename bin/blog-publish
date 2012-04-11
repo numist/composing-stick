@@ -5,7 +5,8 @@ source $BLOGROOT/lib/blog-common.sh
 
 echo "SH : publish post at $1"
 
-post-valid $1
+postdir=$BLOGROOT/data/$(php -r "echo date('Y');")/$1
+post-valid $postdir
 
 location=$(get-location $1)
 tags=$(get-tags $1)
