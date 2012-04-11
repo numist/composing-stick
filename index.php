@@ -32,9 +32,7 @@ function nav() {
 	return "<div class=\"nav\"><a href=\"".Link::about()."\">about</a></div>";
 }
 
-function title() {
-	return "numist the fool";
-}
+require(BLOGROOT."lib/title.inc");
 
 require(BLOGROOT."templates/header.inc");
 
