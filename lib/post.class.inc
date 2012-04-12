@@ -394,6 +394,11 @@ class Post {
 		// footnotes!
 		$content = $this->doFootnotes($content);
 		
+		// attachments!
+		// this is not, btw, the right place for it, but since we don't really
+		//  abstract the post from its data, this is where it must be for now.
+		$content = $this->doAttachments($content);
+		
     if(is_writable(BLOGROOT."tmp") && (microtime(true) - $start > 0.05 || php_sapi_name() == "cli")) {
       file_put_contents($tmpnam, $content);
 			if(php_sapi_name() == "cli") {
@@ -407,6 +412,38 @@ class Post {
 		return $content;
 	}
 
+	private function doAttachments($content) {
+
+		$attachments = array();
+		$index = 0;
+		$attachdir = $this->postpath()."/attachments";
+
+		if (is_dir($attachdir)) { // the directory may not exist; that's okay
+			$attachdir_fh = opendir($attachdir);
+			
+			/* we iterate through the files in the directory in case we want 
+			 *  to Do Things with them in the future */
+			while (($filename = readdir($attachdir_fh)) !== false) {
+				if (is_file($attachdir."/".$filename))
+					$attachments[$index++] = $filename;					
+					//$attachments[$filename] = filetype($attachdir.$filename); // etc
+			}
+		}
+		
+		if (count($attachments) > 0) {
+			$content .= "\n\n<div class=\"attachments\"><hr />\n";
+
+			foreach ($attachments as $idx => $filename) {
+				$content .= "<a href=\"".WEBROOT."data/".$this->location()."/attachments/".$filename."\">";
+				$content .= "<img src=\"".WEBROOT."images/attach.png\">";
+				$content .= $filename."</a><br/>\n";
+			}
+			$content .= "</div>\n";
+		}
+		
+		return $content;
+	}
+	
 	private function doFootnotes($content) {
 		$location = $this->location();
 

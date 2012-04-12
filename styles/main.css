@@ -221,6 +221,20 @@ div.footnotes hr {
 	text-align: left;
 }
 
+div.attachments {
+	margin-top: 1.5em;
+	font-weight: bold;
+}
+
+div.attachments hr {
+  border: none 0;
+  height: 1px;
+	border-top: 1px dotted #afafaf;
+	width: 25%;
+  margin: 0 auto 0 0;
+	text-align: left;
+}
+
 sup {
 	font-size: 55%;
 }

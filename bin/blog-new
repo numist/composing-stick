@@ -32,6 +32,12 @@ if [ ! -f $postdir/post.html ]; then
 	echo "<p></p>" > $postdir/post.html
 fi
 
+# add an attachments directory
+if [ ! -d $postdir/attachments ]; then
+	echo "SH : creating attachments directory"
+	mkdir $postdir/attachments
+fi
+
 echo "SH : $postdir prepared"
 
 if [ "x$EDITOR" != "x" ]; then
