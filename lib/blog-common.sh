@@ -22,13 +22,6 @@ function get-content {
 	cat $1/post.html | sed -e "s/\'/\'\'/g"
 }
 
-function get-timestamp {
-	# well, it works with linux date :/
-	# date --date="$(cat $BLOGROOT/$1/timestamp.txt)" "+%Y-%m-%d %H:%M:%S"
-	# since we are relying on php anyway:
-	php -r "echo date('Y-m-d H:i:s', strtotime('$(cat $1/timestamp.txt)'));"
-}
-
 function get-tags {
 	cat $1/tags.txt
 }
@@ -62,7 +55,7 @@ function post-valid {
 	fi
 	if [ ! -f $1/timestamp.txt ]; then
 		echo "SH : WARN: no timestamp, creating"
-		php -r "echo date('r');" > $1/timestamp.txt
+		date > $1/timestamp.txt
 	fi
 }
 

@@ -6,7 +6,6 @@ source $BLOGROOT/lib/blog-common.sh
 post-valid $1
 
 location=$(get-location $1)
-timestamp=$(get-timestamp $1)
 content=$(get-content $1)
 tags=$(get-tags $1)
 
