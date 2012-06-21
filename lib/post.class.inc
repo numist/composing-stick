@@ -102,7 +102,7 @@ class Post {
 
     public function series($query=false) {
         if(!array_key_exists("series", $this->data)) {
-            assert('file_exists($this->postpath()."/series.txt")');
+            if(!file_exists($this->postpath()."/series.txt")) return array();
             
             $series = file($this->postpath()."/series.txt");
             $ret = array();

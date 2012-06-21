@@ -34,7 +34,8 @@ echo poast($post, true);
 
 $series = $post->series();
 shuffle($series);
-?>
+
+if(count($series)) {?>
 <div class="entry">
 	<div class="entrybody">
 		<p>This post is part of the series
@@ -57,9 +58,7 @@ shuffle($series);
 	<br style="clear:both;">
 	<br style="clear:both;">
 </div>
-
-
-<?
+<?}
 
 require(BLOGROOT."templates/footer.inc");
 
