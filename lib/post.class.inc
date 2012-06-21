@@ -112,7 +112,7 @@ class Post {
                 if($query) {
                     $ret[] = trim($series[$i]);
                 } else {
-                    $ret[] = new Series($series[$i]);
+                    $ret[] = new Series(trim($series[$i]));
                 }
             }
             if($query) {
