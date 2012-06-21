@@ -62,18 +62,29 @@ if(count($matches) < 4) {
 		$pages = $matches[3] - $matches[2] + 1;
 	}
 }
-$series = new Series("funemployment-cross-country-trip");
+$series = new Series("summer-2012-travels");
 
 global $posts;
 $posts = Post::getPosts($series->id(), (($start - 1) * 1).",".($pages * 1));
 
 require(BLOGROOT."templates/header.inc");
 
+if(!count($posts)) header("Location: ".WEBROOT);
+?>
+<div class="entry">
+	<div class="entrybody">
+		<h1><?= $series->title() ?></h1>
+		<?= $series->more() ?></div>
+	<br style="clear:both;">
+	<br style="clear:both;">
+</div>
+<?
+
 foreach($posts as $post) {
 	echo poast($post, true);
 }
 
-if(count($posts) && count(Post::getPosts($series, 1, $posts[count($posts) - 1]->timestamp(true)))) {
+if(count($posts) && count(Post::getPosts($series->id(), 1, time(), $posts[count($posts) - 1]->timestamp(true)))) {
 	?><article id="more"><p><a href="<?= $webroot ?>?/page/<?= ($start + $pages) ?>/">more…</a></p></article><?
 }
 
