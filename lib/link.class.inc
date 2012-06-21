@@ -3,18 +3,6 @@
 require_once(BLOGROOT."lib/post.class.inc");
 
 class Link {
-  public static function tag($arr) {
-    if($arr == null) {
-      trigger_error("no tags for link?", E_USER_WARNING);
-      return Link::index();
-    }
-
-    if(!is_array($arr)) {
-			return WEBROOT."tag/$arr.html";
-		}
-    return WEBROOT."tag/?".implode("&", $arr);
-  }
-  
   public static function post($post, $local=false) {
     assert('is_object($post)');
 
@@ -32,13 +20,8 @@ class Link {
     return WEBROOT."about.html";
   }
   
-  public static function feed($tags=null) {
-    if($tags == null || (is_array($tags) && count($tags) == 0)) {
-      return WEBROOT."feed.atom";
-    }
-    
-    if(!is_array($tags)) $tags = array($tags);
-    return WEBROOT."feed/?".implode("&", $tags);
+  public static function feed() {
+    return WEBROOT."feed.atom";
   }
 }
 

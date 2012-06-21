@@ -8,30 +8,27 @@ class Post {
     public function __construct($location) {
         global $db;
 
-      assert('is_string($location)');
+        assert('is_string($location)');
         assert('substr($location, -1) != DIRECTORY_SEPARATOR');
-      $this->data["location"] = $location;
-      $this->data["postpath"] = BLOGROOT."data/".$location;
+        $this->data["location"] = $location;
+        $this->data["postpath"] = BLOGROOT."data/".$location;
         assert('is_dir($this->data["postpath"])');
 
-    /* if we have a db handle, it's faster to get data (if any exists) from
-     * there than from the fs. prefetch it.
-     */
-    if($db && !array_keys_exist(array("location", "timestamp", "tags", "content"), $this->data)) {
-      // singleton post datas from db
-          $sql = "SELECT * FROM time_index WHERE location == '".str_replace("'", "''", $this->data["location"])."'";
-          $res = $db->query($sql, PDO::FETCH_ASSOC);
-          assert('$res !== false && count($res) == 1');
-        $arr = $res->fetch();
-        $res->closeCursor();
-        unset($res);
+        if($db && !array_keys_exist(array("location", "timestamp", "series", "content"), $this->data)) {
+            // singleton post datas from db
+            $sql = "SELECT * FROM post_index WHERE location == '".str_replace("'", "''", $this->data["location"])."'";
+            $res = $db->query($sql, PDO::FETCH_ASSOC);
+            assert('$res !== false && count($res) == 1');
+            $arr = $res->fetch();
+            $res->closeCursor();
+            unset($res);
 
-      if($arr === false) {
+            if($arr === false) {
                 $this->data["in_db"] = false;
             } else {
                 $this->data["in_db"] = true;
             }
-      }
+        }
         return;
     }
 
@@ -43,29 +40,43 @@ class Post {
         return POST::getPosts(null, (($start - 1) * 10).",".($pages * 10));
     }
 
-    public static function getPosts($tag=null, $num=10, $before=0, $after=0) {
+    public static function getPosts($series=null, $num=10, $before=0, $after=0) {
         global $db;
         // argument checking
         assert('preg_match("/[0-9]+,?[0-9]*/", $num) == 1');
         assert('is_numeric($before)');
         assert('is_numeric($after)');
-        assert('$tag == null || is_array($tag)');
+        assert('$series == null || id(new Series($series))->id()');
 
         if($before == 0) $before = time();
         
-      $where = "";
-        // if we are getting specific tags, the query gets a lot more complicated,
-        if($tag != null) {
-            trigger_error("sorry, no tags anymore", E_USER_ERROR);
+        // if we are getting a specific series, the query gets a lot more complicated,
+        if($series != null) {
+            $id = id(new Series($series))->id();
+
+            $where .= "AND (series LIKE '%:$id:%' OR series LIKE '%:$id' OR series LIKE '$id:%' OR series IS '$id')";
+
+            $order = "ORDER BY time ASC";
+        } else {
+            $where = "";
+
+            $order = "ORDER BY time DESC";
         }
 
-        $sql = "SELECT location FROM time_index WHERE time < '$before' AND time > '$after' $where ORDER BY time DESC LIMIT $num";
-        
-        $res = $db->query($sql, PDO::FETCH_ASSOC);
+        $sql = "SELECT location FROM post_index WHERE time < '$before' AND time > '$after' $where $order LIMIT $num";
         $arr = array();
+        $countsql = "SELECT COUNT(*) ".substr($sql, strpos($sql, "FROM"));
+        $countsql = substr($countsql, 0, strrpos($countsql, "ORDER"));
+        $res = $db->query($countsql, PDO::FETCH_ASSOC);
+        if ($res && $res->fetchColumn() > 0) {
+            $res = $db->query($sql, PDO::FETCH_ASSOC);
 
-        while(false !== ($row = $res->fetch())) {
-            $arr[] = new Post($row['location']);
+            while(false !== ($row = $res->fetch())) {
+                $arr[] = new Post($row['location']);
+            }
+        } else {
+            //trigger_error("no posts in $sql", E_USER_ERROR);
+            var_dump("no posts in $countsql");
         }
 
         return $arr;
@@ -89,26 +100,32 @@ class Post {
   /* accessor functions for object data                                      */
   /***************************************************************************/
 
-    public function tags() {
-      if(!array_key_exists("tags", $this->data)) {
-        assert('file_exists($this->postpath()."/tags.txt")');
-        
-        $tags = file($this->postpath()."/tags.txt");
-        for($i = 0; $i < count($tags); $i++) {
-            $tags[$i] = trim($tags[$i]);
-                if(strlen($tags[$i]) == 0) continue;
-      
-            assert('file_exists(BLOGROOT."images/tags/".$tags[$i].".png")');
-            if(strpos($tags[$i], DIRECTORY_SEPARATOR) !== false) trigger_error("bad dog, no biscuit", E_USER_ERROR);
-        }
-        $this->data["tags"] = $tags;
-      }
+    public function series($query=false) {
+        if(!array_key_exists("series", $this->data)) {
+            assert('file_exists($this->postpath()."/series.txt")');
+            
+            $series = file($this->postpath()."/series.txt");
+            $ret = array();
+            for($i = 0; $i < count($series); $i++) {
+                if(strlen(trim($series[$i])) == 0) continue;
 
-        return $this->data["tags"];
+                if($query) {
+                    $ret[] = trim($series[$i]);
+                } else {
+                    $ret[] = new Series($series[$i]);
+                }
+            }
+            if($query) {
+                $ret = implode(":", $ret);
+            }
+            $this->data["series"] = $ret;
+        }
+
+        return $this->data["series"];
     }
 
     public function location() {
-      // guaranteed by ctor
+        // guaranteed by ctor
         return $this->data["location"];
     }
 
@@ -199,15 +216,10 @@ class Post {
         global $db;
         $timestamp = $this->timestamp(true);
         $location = $this->location();
+        $series = $this->series(true);
 
-        $db->query("DELETE FROM time_index WHERE location = '$location'");
-        $db->query("DELETE FROM tag_index WHERE location = '$location'");
-
-        $db->query("INSERT INTO time_index(location, time) VALUES('$location', $timestamp)");
-        foreach($this->tags() as $tag) {
-            assert('strpos($tag, "\'") === false');
-            $db->query("INSERT INTO tag_index(location, tag) VALUES('$location', '$tag')");
-        }
+        $db->query("DELETE FROM post_index WHERE location = '$location'");
+        $db->query("INSERT INTO post_index(location, time, series) VALUES('$location', $timestamp, '$series')");
     }
     
     public function parse() {

@@ -22,21 +22,9 @@ function get-content {
 	cat $1/post.html | sed -e "s/\'/\'\'/g"
 }
 
-function get-tags {
-	cat $1/tags.txt
-}
-
 function get-location {
 	location=$(cd $1; pwd)
 	echo $(basename $(dirname $location))/$(basename $location)
-}
-
-# tags are defined by the existence of their icons in /images/tags, so that's where we get them.
-function get-all-tags {
-	for tag in $(ls $BLOGROOT/images/tags/*.png); do
-     	tag=$(basename ${tag%.png})
-		echo $tag
-    done
 }
 
 # determine if the path points to a valid post directory based on its contents
@@ -47,10 +35,6 @@ function post-valid {
 	fi
 	if [ ! -f $1/post.html ]; then
 		echo "SH : ERROR: $1/post.html missing!"
-		exit 1
-	fi
-	if [ ! -f $1/tags.txt ]; then
-		echo "SH : ERROR: $1/tags.txt missing!"
 		exit 1
 	fi
 	if [ ! -f $1/timestamp.txt ]; then

@@ -18,12 +18,16 @@ else
 	mkdir -p $postdir
 fi
 	
-# list tags into tags.txt if it does not exist
-if [ ! -f $postdir/tags.txt ]; then
-	echo "SH : creating tagfile"
-	for tag in $(get-all-tags); do
-		echo $tag >> $postdir/tags.txt
-	done
+# make skeleton series file if it does not exist
+if [ ! -f $postdir/series.txt ]; then
+	echo "SH : creating series file"
+	touch $postdir/series.txt
+fi
+
+# make timestamp file if it does not exist
+if [ ! -f $postdir/timestmp.txt ]; then
+	echo -n "SH : creating timestamp file containing: "; date
+	date > $postdir/timestamp.txt
 fi
 
 # make skeleton post if it does not exist
@@ -34,14 +38,10 @@ fi
 
 echo "SH : $postdir prepared"
 
+pushd $postdir
+
 if [ "x$EDITOR" != "x" ]; then
-	here=$(pwd)
-	cd $postdir
 	$EDITOR .
-	cd $here
-	# this isn't really necessary, since the script is over, but it would be
-	# weird tracking down bugs that were due to being in the wrong cwd as a
-	# result of not cleaning this up and adding more code later…
 fi
 
 echo "done"

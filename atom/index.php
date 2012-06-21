@@ -6,14 +6,7 @@ define("WEBROOT", "../");
 require_once(BLOGROOT."lib/intro.inc");
 require_once(BLOGROOT."lib/post.class.inc");
 
-$args = explode("&", $_SERVER['QUERY_STRING']);
-
-if(count($args) == 0)
-  $posts = Post::getPosts();
-else {
-  Post::checkTags($args);
-  $posts = Post::getPosts($args);
-}
+$posts = Post::getPosts();
 
 require(BLOGROOT."lib/atom.php");
 

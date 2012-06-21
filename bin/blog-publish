@@ -8,7 +8,6 @@ echo "SH : publish post at $1"
 post-valid $1
 
 location=$(get-location $1)
-tags=$(get-tags $1)
 
 php $BLOGROOT/bin/post-publish.php $location
 

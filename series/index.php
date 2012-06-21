@@ -6,7 +6,7 @@ if(php_sapi_name() ==="cli") {
 	trigger_error("this script requires variables set by an httpd to locate itself", E_USER_ERROR);
 }
 
-define("BLOGROOT", "./");
+define("BLOGROOT", "../");
 
 $webroot = ((isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") ?
            "https" : "http")."://".$_SERVER["SERVER_NAME"].dirname($_SERVER["SCRIPT_NAME"]);
@@ -16,7 +16,7 @@ if(substr($webroot, -1) != "/") {
 define("WEBROOT", $webroot.BLOGROOT);
 
 require_once(BLOGROOT."lib/intro.inc");
-require_once(BLOGROOT."lib/post.class.inc");
+require_once(BLOGROOT."lib/series.class.inc");
 
 function head() { ?>
 	<script type="text/javascript">
@@ -24,7 +24,6 @@ function head() { ?>
 		jsLoad("<?= WEBROOT ?>js/infScr-1.0.2.min.js");
 		jsLoad("<?= WEBROOT ?>js/jk-1.0.4.min.js");
 	</script>
-	<link href="<?= Link::feed() ?>" type="application/atom+xml" rel="alternate" title="posts" />
 	<?
 }
 
@@ -36,7 +35,14 @@ function title() {
 	return "numist the fool";
 }
 
-require(BLOGROOT."templates/header.inc");
+function postwidth() {
+	global $posts;
+	$width = 0;
+	foreach($posts as $post) {
+		if($post->width() > $width) $width = $post->width();
+	}
+	return $width;
+}
 
 preg_match("/\/(pages?)\/([0-9]+)-?([0-9]*)\/?$/", $_SERVER["REQUEST_URI"], $matches);
 if(count($matches) < 4) {
@@ -56,15 +62,18 @@ if(count($matches) < 4) {
 		$pages = $matches[3] - $matches[2] + 1;
 	}
 }
+$series = new Series("funemployment-cross-country-trip");
 
-$posts = Post::getPages($start, $pages);
+global $posts;
+$posts = Post::getPosts($series->id(), (($start - 1) * 1).",".($pages * 1));
 
+require(BLOGROOT."templates/header.inc");
 
 foreach($posts as $post) {
-	echo poast($post);
+	echo poast($post, true);
 }
 
-if(count($posts) && count(Post::getPosts(null, 10, $posts[count($posts) - 1]->timestamp(true)))) {
+if(count($posts) && count(Post::getPosts($series, 1, $posts[count($posts) - 1]->timestamp(true)))) {
 	?><article id="more"><p><a href="<?= $webroot ?>?/page/<?= ($start + $pages) ?>/">more…</a></p></article><?
 }
 

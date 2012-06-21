@@ -7,7 +7,6 @@ post-valid $1
 
 location=$(get-location $1)
 content=$(get-content $1)
-tags=$(get-tags $1)
 
 echo "PHP: generating $BLOGROOT/data/$location/preview.html"
 php -d log_errors=On -d display_errors=Off \
