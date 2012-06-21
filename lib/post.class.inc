@@ -74,9 +74,6 @@ class Post {
             while(false !== ($row = $res->fetch())) {
                 $arr[] = new Post($row['location']);
             }
-        } else {
-            //trigger_error("no posts in $sql", E_USER_ERROR);
-            var_dump("no posts in $countsql");
         }
 
         return $arr;
@@ -180,18 +177,20 @@ class Post {
             $thewidth = 580;
             $html = str_get_html($this->htmlContent());
             $imgs = $html->find("img");
-        // sigh. no library is perfect. no matches should = empty array.
-        if($imgs === null) $imgs = array();
+            // sigh. no library is perfect. no matches should = empty array.
+            if($imgs === null) $imgs = array();
 
-        foreach($imgs as $img) {
-          if(isset($img->src)) {
+            foreach($imgs as $img) {
+                if(isset($img->src)) {
                     if(strpos($img->src, WEBROOT) === 0) {
                         $img->src = BLOGROOT.substr($img->src, strlen(WEBROOT));
+                    } else {
+                        trigger_error($img->src." doesn't start with ".WEBROOT."? in ".$_SERVER["SCRIPT_FILENAME"], E_USER_WARNING);
                     }
-            list($width, $height, $type, $attr) = getimagesize($img->src);
-            if($width > $thewidth) $thewidth = $width;
-          }
-        }
+                    list($width, $height, $type, $attr) = getimagesize($img->src);
+                    if($width > $thewidth) $thewidth = $width;
+                }
+            }
             
             $this->data["width"] = $thewidth;
         }
@@ -242,9 +241,9 @@ class Post {
                         $fname = filename_append(basename($img->src), "-".++$i);
                     }
                     stderr("caching ".$img->src."\n");
-                    $data = file_get_contents($img->src) or trigger_error("bad link: ".$img->src."?", E_USER_ERROR);
-                    file_put_contents($path.$fname, $data);
-                    unset($data);
+                    $imagedata = file_get_contents($img->src) or trigger_error("bad link: ".$img->src."?", E_USER_ERROR);
+                    file_put_contents($path.$fname, $imagedata);
+                    unset($imagedata);
                     $img->src = "local://$fname";
         }
       }
@@ -318,24 +317,24 @@ class Post {
     }
 
     public function htmlContent($fullpost=true) {
-      $content = $this->content();
-      
-        // generating htmlContent can be slow, so we cache!
-    $md5 = md5($content.BLOGROOT);
-    $loc = str_replace(DIRECTORY_SEPARATOR, "-", $this->location());
-    $tmpnam = BLOGROOT."tmp/$loc-$md5-".($fullpost ? "f" : "s");
-        if(php_sapi_name() !=="cli") {
-            if(is_dir(BLOGROOT."tmp") && file_exists($tmpnam)) {
-        if(is_writable($tmpnam))
-            touch($tmpnam);
-        return file_get_contents($tmpnam);
-        }
-    } else {
+        if (php_sapi_name() === "cli") {
             // if we are running cli, run the preprocessor
             $this->parse();
+            // and update the related local variables
         }
-        
-    $start = microtime(true);
+        $content = $this->content();
+
+        // generating htmlContent can be slow, so we cache!
+        $md5 = md5($content.BLOGROOT.WEBROOT);
+        $loc = str_replace(DIRECTORY_SEPARATOR, "-", $this->location());
+        $tmpnam = BLOGROOT."tmp/$loc-$md5-".($fullpost ? "f" : "s");
+        if(is_dir(BLOGROOT."tmp") && file_exists($tmpnam) && !php_sapi_name() === "cli") {
+            if(is_writable($tmpnam))
+                touch($tmpnam);
+            return file_get_contents($tmpnam);
+        }
+
+        $start = microtime(true);
 
         /* cut up the post as necessary.  short posts display everything before
          * <!-- more -->, long posts display everything except content between
@@ -365,15 +364,15 @@ class Post {
         );
         $content = str_replace($find, $repl, $content);
 
-    // image width and heights for local images
-    $html = str_get_html($content);
-    $imgs = $html->find("img");
-    // sigh. no library is perfect. no matches should = empty array.
-    if($imgs === null) $imgs = array();
+        // image width and heights for local images
+        $html = str_get_html($content);
+        $imgs = $html->find("img");
+        // sigh. no library is perfect. no matches should = empty array.
+        if($imgs === null) $imgs = array();
     
-    foreach($imgs as $img) {
-      if(isset($img->src)) {
-        if(strpos($img->src, "local://") === 0) {
+        foreach($imgs as $img) {
+            if(isset($img->src)) {
+                if(strpos($img->src, "local://") === 0) {
                     $postdir = BLOGROOT."data/".$this->location().DIRECTORY_SEPARATOR;
                     $fname = $ogname = substr(urldecode($img->src), strlen("local://"));
                     if(!$fullpost && file_exists($postdir.filename_append(urldecode($fname), "-small"))) {
@@ -383,20 +382,20 @@ class Post {
                     }
                     $img->src = "local://".$fname;
     
-          list($width, $height, $type, $attr) = getimagesize($postdir.$fname);
-          $img->width = $width;
-          $img->height = $height;
+                    list($width, $height, $type, $attr) = getimagesize($postdir.$fname);
+                    $img->width = $width;
+                    $img->height = $height;
                     if($img->parent()->tag != "a" && $ogname != $fname) {
                         $img->outertext = '<a href="local://'.$ogname.'">'.$img->outertext.'</a>';
                     }
-        } else if(strpos(urldecode($img->src), "root://") === 0) {
-          list($width, $height, $type, $attr) = getimagesize(BLOGROOT.substr($img->src, 7));
-          $img->width = $width;
-          $img->height = $height;
+                } else if(strpos(urldecode($img->src), "root://") === 0) {
+                    list($width, $height, $type, $attr) = getimagesize(BLOGROOT.substr($img->src, 7));
+                    $img->width = $width;
+                    $img->height = $height;
+                }
+            }
         }
-      }
-    }
-    $content = $html->save();
+        $content = $html->save();
 
         // links to local files made sensible
         $content = str_replace("local://", WEBROOT."data/".$this->location()."/", $content);
@@ -407,16 +406,18 @@ class Post {
         
         // footnotes!
         $content = $this->doFootnotes($content);
-        
-    if(is_writable(BLOGROOT."tmp") && (microtime(true) - $start > 0.05 || php_sapi_name() == "cli")) {
-      file_put_contents($tmpnam, $content);
+
+        if(is_writable(BLOGROOT."tmp") && (microtime(true) - $start > 0.05 ||
+                                           php_sapi_name() == "cli" ||
+                                           $_SERVER["REMOTE_ADDR"] == "::1"))
+        {
+            file_put_contents($tmpnam, $content);
             if(php_sapi_name() == "cli") {
                 stderr($this->location().": ".number_format(microtime(true) - $start, 3)."s\n");
             } else {
                 trigger_error($this->location().": ".number_format(microtime(true) - $start, 3)."s", E_USER_WARNING);
             }
-            
-    }
+        }
 
         return $content;
     }

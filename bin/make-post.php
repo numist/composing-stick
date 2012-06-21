@@ -51,7 +51,7 @@ if(count($series)) {?>
 				if($i && $i == count($series) - 1) {
 					echo "and ";
 				}
-				?><a href="#"><?= $series[$i]->title() ?></a><?
+				?><a href="<?= $series[$i]->link() ?>"><?= $series[$i]->title() ?></a><?
 			}
 		?>.</p>
 	</div>

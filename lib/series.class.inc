@@ -69,6 +69,10 @@ class Series {
         return $this->data["more"];
     }
 
+    public function link() {
+        return WEBROOT."series/".$this->id()."/";
+    }
+
     private function path() {
     	// guaranteed by ctor
     	return $this->data["path"];
