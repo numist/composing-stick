@@ -54,7 +54,7 @@ class Post {
         if($series != null) {
             $id = id(new Series($series))->id();
 
-            $where = "AND (series LIKE '%:$id:%' OR series LIKE '%:$id' OR series LIKE '$id:%' OR series IS '$id')";
+            $where = "AND (series LIKE '%:$id:%' OR series LIKE '%:$id' OR series LIKE '$id:%' OR series = '$id')";
 
             $order = "ORDER BY time ASC";
         } else {

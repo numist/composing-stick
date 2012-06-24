@@ -37,8 +37,8 @@ shuffle($series);
 
 if(count($series)) {?>
 <div class="entry">
-	<div class="entrybody">
-		<p>This post is part of the series
+	<div class="entrybody" style="width: 100%;">
+		<p style="text-align: center">This post is part of the series
 			<? for($i = 0; $i < count($series); $i++) {
 				// Three or more items, Oxford commas!
 				if($i && count($series) > 2) {
