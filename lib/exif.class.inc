@@ -3,34 +3,44 @@
 // example usage:
 if (false) {
     $exif = new EXIFFormatter("/path/to/image.jpg");
-    if (!$exif->valid()) trigger_error("Filename no good", E_USER_ERROR);
+    if (!$exif->valid()) trigger_error("EXIFFormatter won't work, bad file or could not find exiftool", E_USER_ERROR);
     echo $exif->focalLength()."\t".$exif->shutterSpeed()."\t".$exif->fNumber()."\t".$exif->iso()."\n";
 }
 
 class EXIFFormatter {
-    private static $tool = "/usr/local/bin/exiftool";
+    private $tool;
     private $filename;
 
-    function __construct($f) {
+    function __construct($f, $tool="exiftool") {
         $this->filename = false;
+
+        // Verify the exiftool
+        $this->tool = exec("PATH=\"\$PATH:/usr/local/bin\" which ".$tool, $unused, $code);
+        if ($code !== 0) {
+            trigger_error("Could not locate exiftool: ".$tool."!", E_USER_WARNING);
+            return;
+        }
 
         if (!file_exists($f)) {
             trigger_error("File $f does not exist", E_USER_WARNING);
             return;
         }
 
-        if (!assert(is_readable($f))) return;
+        if (!is_readable($f)) {
+            trigger_error("File $f is not readable", E_USER_WARNING);
+            return;
+        }
 
         $this->filename = $f;
     }
 
     public function valid() {
-        return is_readable($this->filename);
+        return $this->filename && is_readable($this->filename);
     }
 
     private function getExifTag($tagName) {
-        if ($this->filename === false) trigger_error("Invalid filename", E_USER_ERROR);
-        $line = exec(self::$tool." -T -u -".$tagName." ".$this->filename, $unused, $code);
+        if ($this->filename === false) trigger_error("Invalid filename, check ->valid() before calling.", E_USER_ERROR);
+        $line = exec($this->tool." -T -u -".$tagName." ".$this->filename, $unused, $code);
 
         // Command error
         if ($code !== 0) {
@@ -40,7 +50,7 @@ class EXIFFormatter {
 
         // Empty tag
         if ($line == "-") {
-            trigger_error("Tag ".$tagName." not found in ".$this->filename, E_USER_WARNING);
+            trigger_error("Tag ".$tagName." not found in ".$this->filename, E_USER_NOTICE);
             return "";
         }
 
@@ -48,13 +58,17 @@ class EXIFFormatter {
     }
 
     private static function getDigit($digit) {
-        assert("strlen('$digit') == 1");
-        if (!assert("is_numeric('$digit')")) return false;
-    
-        $digit = (int)$digit;
-        if (!assert("$digit >= 0 && $digit < 10")) trigger_error("Impossibru!", E_USER_ERROR);
-    
-        return $digit;
+        if (strlen($digit) !== 1) {
+            assert("strlen('$digit') === 1");
+            return false;
+        }
+
+        if (!is_numeric($digit)) {
+            assert("is_numeric('$digit')");
+            return false;
+        }
+
+        return (int)$digit;
     }
 
     /*   __                 _   _                  _   _     
@@ -70,10 +84,16 @@ class EXIFFormatter {
                 ? strpos($input, " ")
                 : strlen($input);
         $focalLength = substr($input, 0, $length);
-        if (!assert("is_numeric('$focalLength') && \$input = '$input'")) return "";
+        if (!is_numeric($focalLength)) {
+            assert("is_numeric('$focalLength') && \$input = '$input'");
+            return "";
+        }
     
         $focalLength = (int)$focalLength;
-        if (!assert("$focalLength > 0 && \$input = '$input'")) return "";
+        if ($focalLength <= 0) {
+            assert("$focalLength > 0 && \$input = '$input'");
+            return "";
+        }
     
         return $focalLength."mm";
     }
@@ -98,10 +118,21 @@ class EXIFFormatter {
 
     private function formatShutterSpeed($input) {
         // TODO: non-fractional shutter speeds
-        if (!assert("strpos('$input', '/') > 0 && \$input = '$input'")) return "";
-        if (!assert("count(explode('/', '$input')) == 2")) return "";
+        if (strpos($input, '/') == 0) {
+            assert("strpos('$input', '/') > 0 && \$input = '$input'");
+            return "";
+        }
+
+        if (count(explode('/', $input)) != 2) {
+            assert("count(explode('/', '$input')) == 2");
+            return "";
+        }
+
         list($numerator, $denominator) = explode('/', $input);
-        if (!assert("is_numeric('$numerator') && is_numeric('$denominator') && \$input = '$input'")) return "";
+        if (!is_numeric($numerator) || !is_numeric($denominator)) {
+            assert("is_numeric('$numerator') && is_numeric('$denominator') && \$input = '$input'");
+            return "";
+        }
     
         // Initialize
         $shutterSpeed = "";
@@ -151,9 +182,15 @@ class EXIFFormatter {
      **********************************************/
 
     private function formatFNumber($input) {
-        if (!assert("is_numeric('$input') && \$input = '$input'")) return "";
+        if (!is_numeric($input)) {
+            assert("is_numeric('$input') && \$input = '$input'");
+            return "";
+        }
     
-        if (!assert("(int)'$input' > 0 && \$input = '$input'")) return "";
+        if ((int)$input <= 0) {
+            assert("(int)'$input' > 0 && \$input = '$input'");
+            return "";
+        }
     
         return "ƒ/".$input;
     }
@@ -178,9 +215,15 @@ class EXIFFormatter {
      **************/
 
     private function formatISO($input) {
-        if (!assert("is_numeric('$input')")) return "";
+        if (!is_numeric($input)) {
+            assert("is_numeric('$input')");
+            return "";
+        }
     
-        if (!assert("(int)'$input' > 0")) return "";
+        if ((int)$input <= 0) {
+            assert("(int)'$input' > 0");
+            return "";
+        }
     
         return "ISO ".$input;
     }
