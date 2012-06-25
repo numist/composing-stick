@@ -8,53 +8,25 @@ if (false) {
 }
 
 class EXIFFormatter {
-    private $tool;
-    private $filename;
+    private $data;
 
-    function __construct($f, $tool="exiftool") {
-        $this->filename = false;
-
-        // Verify the exiftool
-        $this->tool = exec("PATH=\"\$PATH:/usr/local/bin\" which ".$tool, $unused, $code);
-        if ($code !== 0) {
-            trigger_error("Could not locate exiftool: ".$tool."!", E_USER_WARNING);
-            return;
-        }
-
-        if (!file_exists($f)) {
-            trigger_error("File $f does not exist", E_USER_WARNING);
-            return;
-        }
-
-        if (!is_readable($f)) {
-            trigger_error("File $f is not readable", E_USER_WARNING);
-            return;
-        }
-
-        $this->filename = $f;
+    function __construct($f) {
+        if (!function_exists("exif_read_data")) die("Missing function exif_read_data");
+        $this->data = exif_read_data($f);
     }
 
     public function valid() {
-        return $this->filename && is_readable($this->filename);
+        return $this->data !== false;
     }
 
-    private function getExifTag($tagName) {
-        if ($this->filename === false) trigger_error("Invalid filename, check ->valid() before calling.", E_USER_ERROR);
-        $line = exec($this->tool." -T -u -".$tagName." ".$this->filename, $unused, $code);
-
-        // Command error
-        if ($code !== 0) {
-            assert('$code === 0');
-            return "";
+    private function getExifTag($tagName, $computed=false) {
+        if (!$computed) {
+            if (!array_key_exists($tagName, $this->data)) return "";
+            return $this->data[$tagName];
+        } else {
+            if (!array_key_exists($tagName, $this->data["COMPUTED"])) return "";
+            return $this->data["COMPUTED"][$tagName];
         }
-
-        // Empty tag
-        if ($line == "-") {
-            trigger_error("Tag ".$tagName." not found in ".$this->filename, E_USER_NOTICE);
-            return "";
-        }
-
-        return trim($line);
     }
 
     private static function getDigit($digit) {
@@ -80,32 +52,27 @@ class EXIFFormatter {
      *******************************************************/
 
     private function formatFocalLength($input) {
-        $length = strpos($input, " ") !== false
-                ? strpos($input, " ")
-                : strlen($input);
-        $focalLength = substr($input, 0, $length);
-        if (!is_numeric($focalLength)) {
-            assert("is_numeric('$focalLength') && \$input = '$input'");
+        $input = (int)$input; // TODO: actually math, format is generally ##/1
+
+        if ($input <= 0) {
+            assert("$input > 0");
             return "";
         }
     
-        $focalLength = (int)$focalLength;
-        if ($focalLength <= 0) {
-            assert("$focalLength > 0 && \$input = '$input'");
-            return "";
-        }
-    
-        return $focalLength."mm";
+        return $input."mm";
     }
 
     private function getFocalLength() {
         return $this->getExifTag("FocalLength");
     }
 
+    public function hasFocalLength() {
+        return $this->getFocalLength() != "";
+    }
+
     public function focalLength() {
-        $focalLength = $this->getFocalLength();
-        if ($focalLength == "") return "";
-        return $this->formatFocalLength($focalLength);
+        if (!$this->hasFocalLength()) return "";
+        return $this->formatFocalLength($this->getFocalLength());
     }
     
     /*      _           _   _                                      _ 
@@ -164,13 +131,16 @@ class EXIFFormatter {
     }
 
     private function getShutterSpeed() {
-        return $this->getExifTag("ShutterSpeed");
+        return $this->getExifTag("ExposureTime");
+    }
+
+    public function hasShutterSpeed() {
+        return $this->getShutterSpeed() != "";
     }
 
     public function shutterSpeed() {
-        $shutterSpeed = $this->getShutterSpeed();
-        if ($shutterSpeed == "") return "";
-        return $this->formatShutterSpeed($shutterSpeed);
+        if (!$this->hasShutterSpeed()) return "";
+        return $this->formatShutterSpeed($this->getShutterSpeed());
     }
     
     /*   __                         _               
@@ -182,6 +152,11 @@ class EXIFFormatter {
      **********************************************/
 
     private function formatFNumber($input) {
+        $leader = "f/"; // input in format f/16; trim "f/" leader
+        if (strpos($input, $leader) === 0) {
+            $input = substr($input, strpos($input, $leader) + strlen($leader));
+        }
+
         if (!is_numeric($input)) {
             assert("is_numeric('$input') && \$input = '$input'");
             return "";
@@ -196,13 +171,16 @@ class EXIFFormatter {
     }
     
     private function getFNumber() {
-        return $this->getExifTag("FNumber");
+        return $this->getExifTag("ApertureFNumber", true);
+    }
+
+    public function hasFNumber() {
+        return $this->getFNumber() != "";
     }
 
     public function fNumber() {
-        $fNumber = $this->getFNumber();
-        if ($fNumber == "") return "";
-        return $this->formatFNumber($fNumber);
+        if (!$this->hasFNumber()) return "";
+        return $this->formatFNumber($this->getFNumber());
     }
 
 
@@ -215,13 +193,8 @@ class EXIFFormatter {
      **************/
 
     private function formatISO($input) {
-        if (!is_numeric($input)) {
-            assert("is_numeric('$input')");
-            return "";
-        }
-    
-        if ((int)$input <= 0) {
-            assert("(int)'$input' > 0");
+        if (!is_int($input)) {
+            assert("is_int('$input')");
             return "";
         }
     
@@ -229,13 +202,16 @@ class EXIFFormatter {
     }
 
     private function getISO() {
-        return $this->getExifTag("ISO");
+        return $this->getExifTag("ISOSpeedRatings");
+    }
+
+    public function hasISO() {
+        return $this->getISO() != "";
     }
 
     public function iso() {
-        $iso = $this->getISO();
-        if ($iso == "") return "";
-        return $this->formatISO($iso);
+        if (!$this->hasISO()) return "";
+        return $this->formatISO($this->getISO());
     }
 }
 
