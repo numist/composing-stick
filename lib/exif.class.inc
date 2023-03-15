@@ -1,8 +1,8 @@
 <?php
 
 // example usage:
-if (false) {
-    $exif = new EXIFFormatter("/path/to/image.jpg");
+if (true) {
+    $exif = new EXIFFormatter("/Users/numist/Desktop/IMG_8972.jpg");
     if (!$exif->valid()) trigger_error("EXIFFormatter won't work, bad file or could not find exiftool", E_USER_ERROR);
     echo $exif->focalLength()."\t".$exif->shutterSpeed()."\t".$exif->fNumber()."\t".$exif->iso()."\n";
 }

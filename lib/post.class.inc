@@ -473,11 +473,13 @@ class Post {
         if(count($footnotes) > 0) {
             $content .= "\n\n<div class=\"footnotes\"><hr />\n";
             foreach($footnotes as $footnum => $foottext) {
-              // ensure all footnotes are matched
-            assert(strpos($foottext, "label:") !== 0);
+                // ensure all footnotes are matched
+                if (strpos($foottext, "label:") === 0) {
+                    trigger_error("missing label $foottext", E_USER_ERROR);
+                }
 
-            $content .= "<a name=\"".$location."/fn".($footnum + 1)."\"></a><sup>"
-                     .($footnum + 1)."</sup> ".$foottext."<br />\n";
+                $content .= "<a name=\"".$location."/fn".($footnum + 1)."\"></a><sup>"
+                         .($footnum + 1)."</sup> ".$foottext."<br />\n";
             }
             $content .= "</div>\n";
         }

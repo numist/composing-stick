@@ -21,7 +21,7 @@ class Link {
   }
   
   public static function feed() {
-    return WEBROOT."feed.atom";
+    return WEBROOT."atom/";
   }
 }
 

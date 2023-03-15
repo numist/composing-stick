@@ -5,8 +5,8 @@ export TZ="America/Los_Angeles"
 # alright, stop touching stuff.
 
 # make sure php isn't going to throw an error that winds up creating a lot of strange looking directories
-if [ "x$(php -r "date('Y');" 2>&1)" != "x" ]; then
-   php -r "date('Y');"
+if [ "x$(date_default_timezone_set('America/Los_Angeles'); php -r "date('Y');" 2>&1)" != "x" ]; then
+   php -r "date_default_timezone_set('America/Los_Angeles'); date('Y');"
    exit
 fi
 

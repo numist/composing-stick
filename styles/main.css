@@ -221,8 +221,21 @@ div.footnotes hr {
 	text-align: left;
 }
 
-sup {
+sup,
+sub {
+    line-height: 1;
+    vertical-align: baseline;
+    position: relative;
 	font-size: 55%;
+}
+
+sup {
+    bottom: 1.45ex;
+}
+
+sub {
+    top: .5ex;
+    /*top: .95ex;*/
 }
 
 div.edit {

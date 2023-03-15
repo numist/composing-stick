@@ -8,7 +8,7 @@ if [ "x$1" == "x" ]; then
 	exit 1
 fi
 
-postdir=$BLOGROOT/data/$(php -r "echo date('Y');")/$1
+postdir=$BLOGROOT/data/$(php -r "date_default_timezone_set('America/Los_Angeles'); echo date('Y');")/$1
 
 # make the post directory
 if [ -d $postdir ]; then
