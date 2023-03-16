@@ -1,10 +1,12 @@
+<?php
+	assert_options(ASSERT_BAIL, true);
+	assert('ini_get("short_open_tag")');
+?>
 <?
 
 $page_start = microtime(true);
 
-if(php_sapi_name() ==="cli") {
-	trigger_error("this script requires variables set by an httpd to locate itself", E_USER_ERROR);
-}
+assert('php_sapi_name() ==="fpm-fcgi"', "this script requires variables set by an httpd to locate itself");
 
 define("BLOGROOT", "./");
 
